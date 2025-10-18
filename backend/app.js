@@ -5,8 +5,13 @@ import gigRoutes from './routes/gigRoutes.js';
 import messageRoutes from './routes/messageRoutes.js';
 import reviewRoutes from './routes/reviewRoutes.js';
 import adminRoutes from './routes/adminRoutes.js'; // Add this
+import paymentRoutes from './routes/paymentRoutes.js';
+import webhookRoutes from './routes/webhookRoutes.js';
 
 const app = express();
+
+
+app.use('/api/webhooks', webhookRoutes);
 
 // Middleware
 app.use(cors());
@@ -18,6 +23,8 @@ app.use('/api/gigs', gigRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/admin', adminRoutes); // Add this
+app.use('/api/payments', paymentRoutes);
+
 
 // Home route
 app.get('/', (req, res) => {
