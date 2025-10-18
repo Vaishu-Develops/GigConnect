@@ -4,6 +4,7 @@ import userRoutes from './routes/userRoutes.js';
 import gigRoutes from './routes/gigRoutes.js';
 import messageRoutes from './routes/messageRoutes.js';
 import reviewRoutes from './routes/reviewRoutes.js';
+import adminRoutes from './routes/adminRoutes.js'; // Add this
 
 const app = express();
 
@@ -12,10 +13,11 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
-app.use('/api/users', userRoutes);
+app.use('/api/users', userRoutes);    
 app.use('/api/gigs', gigRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/reviews', reviewRoutes);
+app.use('/api/admin', adminRoutes); // Add this
 
 // Home route
 app.get('/', (req, res) => {

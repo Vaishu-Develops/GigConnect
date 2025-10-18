@@ -4,6 +4,20 @@ import generateToken from '../utils/generateToken.js';
 // @desc    Register new user
 // @route   POST /api/users/register
 // @access  Public
+
+
+// @desc    Get all users (for testing)
+// @route   GET /api/users
+// @access  Public
+const getUsers = async (req, res) => {
+  try {
+    const users = await User.find({}).select('-password');
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 const registerUser = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
@@ -123,4 +137,8 @@ export {
   loginUser,
   getUserProfile,
   updateUserProfile,
+  getUsers, // Add this
 };
+
+
+
