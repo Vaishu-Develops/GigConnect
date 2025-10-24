@@ -132,12 +132,137 @@ const updateUserProfile = async (req, res) => {
   }
 };
 
+// @desc    Get user by ID
+// @route   GET /api/users/:id
+// @access  Public
+const getUserById = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select('-password');
+    if (user) {
+      res.json(user);
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Update user by ID (admin or user)
+// @route   PUT /api/users/:id
+// @access  Private (protect handled by routes when needed)
+const updateUserById = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    // Update allowed fields
+    user.name = req.body.name ?? user.name;
+    user.email = req.body.email ?? user.email;
+    user.bio = req.body.bio ?? user.bio;
+    user.skills = req.body.skills ?? user.skills;
+    user.location = req.body.location ?? user.location;
+    if (req.body.password) user.password = req.body.password;
+
+    const updated = await user.save();
+    res.json({ message: 'User updated', user: { _id: updated._id, name: updated.name, email: updated.email } });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Delete user by ID
+// @route   DELETE /api/users/:id
+// @access  Private/Admin
+const deleteUserById = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    await user.remove();
+    res.json({ message: 'User removed' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Update user status
+// @route   PUT /api/users/:id/status
+// @access  Private/Admin
+const updateUserStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    user.status = status;
+    await user.save();
+    res.json({ message: 'Status updated' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get user stats
+// @route   GET /api/users/:id/stats
+// @access  Public
+const getUserStats = async (req, res) => {
+  try {
+    // Basic placeholder stats
+    const stats = {
+      gigs: 0,
+      projects: 0,
+      reviews: 0,
+    };
+    res.json(stats);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Add portfolio item
+// @route   POST /api/users/portfolio
+// @access  Private
+const addPortfolioItem = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (!user.portfolio) user.portfolio = [];
+    const item = req.body;
+    user.portfolio.push(item);
+    await user.save();
+    res.status(201).json({ message: 'Portfolio item added' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Delete portfolio item
+// @route   DELETE /api/users/portfolio/:itemId
+// @access  Private
+const deletePortfolioItem = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user || !user.portfolio) return res.status(404).json({ message: 'Item not found' });
+    user.portfolio = user.portfolio.filter(item => item.id !== req.params.itemId && item._id?.toString() !== req.params.itemId);
+    await user.save();
+    res.json({ message: 'Portfolio item removed' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export {
   registerUser,
   loginUser,
   getUserProfile,
   updateUserProfile,
   getUsers, // Add this
+  getUserById,
+  updateUserById,
+  deleteUserById,
+  updateUserStatus,
+  getUserStats,
+  addPortfolioItem,
+  deletePortfolioItem,
 };
 
 

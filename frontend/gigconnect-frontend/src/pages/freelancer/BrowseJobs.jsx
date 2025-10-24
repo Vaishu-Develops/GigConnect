@@ -1,0 +1,118 @@
+import React, { useState, useEffect } from 'react';
+import { gigService } from '../../services/gigService';
+import GigGrid from '../../components/gig/GigGrid';
+import GigFilters from '../../components/gig/GigFilters';
+import Input from '../../components/ui/Input';
+import Button from '../../components/ui/Button';
+
+const BrowseJobs = () => {
+  const [gigs, setGigs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState({
+    keyword: '',
+    location: '',
+    minBudget: '',
+    maxBudget: '',
+    category: '',
+    skills: '',
+    sortBy: 'newest'
+  });
+
+  useEffect(() => {
+    fetchGigs();
+  }, [filters]);
+
+  const fetchGigs = async () => {
+    setLoading(true);
+    try {
+      const gigsData = await gigService.getGigs({ ...filters, status: 'open' });
+      setGigs(gigsData);
+    } catch (error) {
+      console.error('Failed to fetch gigs:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    fetchGigs();
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Hero Section */}
+      <div className="bg-gradient-to-r from-emerald-600 to-purple-600 text-white py-16">
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            Find Your Next Project
+          </h1>
+          <p className="text-xl text-emerald-100 mb-8 max-w-2xl mx-auto">
+            Discover local gigs that match your skills and expertise
+          </p>
+          
+          {/* Quick Search */}
+          <form onSubmit={handleSearch} className="max-w-2xl mx-auto">
+            <div className="flex space-x-2">
+              <Input
+                placeholder="Search gigs by keyword, skills..."
+                value={filters.keyword}
+                onChange={(e) => setFilters(prev => ({ ...prev, keyword: e.target.value }))}
+                className="flex-1"
+              />
+              <Button type="submit">
+                Search
+              </Button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Filters Sidebar */}
+          <div className="lg:w-80 flex-shrink-0">
+            <GigFilters filters={filters} onFiltersChange={setFilters} />
+          </div>
+
+          {/* Gigs Grid */}
+          <div className="flex-1">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  Available Jobs
+                </h2>
+                <p className="text-gray-600">
+                  {loading ? 'Loading...' : `${gigs.length} gigs found`}
+                </p>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <span className="text-sm text-gray-600">Sort by:</span>
+                <select
+                  value={filters.sortBy}
+                  onChange={(e) => setFilters(prev => ({ ...prev, sortBy: e.target.value }))}
+                  className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                >
+                  <option value="newest">Newest First</option>
+                  <option value="budget_high">Budget: High to Low</option>
+                  <option value="budget_low">Budget: Low to High</option>
+                  <option value="deadline">Nearby Deadline</option>
+                </select>
+              </div>
+            </div>
+
+            <GigGrid 
+              gigs={gigs} 
+              loading={loading}
+              emptyMessage="No gigs match your search criteria. Try adjusting your filters."
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default BrowseJobs;

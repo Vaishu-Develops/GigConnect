@@ -1,0 +1,138 @@
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import Rating from '../ui/Rating';
+import Badge from '../ui/Badge';
+import Button from '../ui/Button';
+
+const ProfileHeader = ({ user, isOwnProfile = false }) => {
+  const { user: currentUser } = useAuth();
+
+  const formatRate = (rate) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0
+    }).format(rate);
+  };
+
+  const stats = [
+    { label: 'Completed Projects', value: user.completedProjects || 0 },
+    { label: 'Client Reviews', value: user.reviewCount || 0 },
+    { label: 'Response Rate', value: `${user.responseRate || 0}%` },
+    { label: 'On-time Delivery', value: `${user.onTimeRate || 0}%` },
+  ];
+
+  return (
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      {/* Cover Photo */}
+      <div className="h-32 bg-gradient-to-r from-emerald-500 to-purple-600"></div>
+      
+      {/* Profile Info */}
+      <div className="px-6 pb-6">
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between -mt-16 mb-6">
+          <div className="flex flex-col md:flex-row md:items-end space-y-4 md:space-y-0 md:space-x-6">
+            <img
+              src={user.avatar || '/default-avatar.png'}
+              alt={user.name}
+              className="w-32 h-32 rounded-full border-4 border-white shadow-lg"
+            />
+            
+            <div className="space-y-2">
+              <div className="flex items-center space-x-3">
+                <h1 className="text-2xl font-bold text-gray-900">{user.name}</h1>
+                {user.isOnline && (
+                  <Badge variant="success" size="sm">
+                    Online
+                  </Badge>
+                )}
+              </div>
+              
+              <p className="text-lg text-gray-600 capitalize">{user.role}</p>
+              
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2">
+                  <Rating rating={user.avgRating || 0} size="md" readonly showLabel />
+                </div>
+                <span className="text-gray-500">•</span>
+                <span className="text-gray-600">
+                  {user.location || 'Location not set'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex space-x-3 mt-4 md:mt-0">
+            {isOwnProfile ? (
+              <Button as={Link} to="/profile/edit">
+                Edit Profile
+              </Button>
+            ) : (
+              <>
+                <Button as={Link} to={`/messages/new?userId=${user._id}`}>
+                  Message
+                </Button>
+                {currentUser?.role === 'client' && user.role === 'freelancer' && (
+                  <Button variant="secondary">
+                    Hire Me
+                  </Button>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Bio */}
+        {user.bio && (
+          <p className="text-gray-700 text-lg leading-relaxed mb-6">
+            {user.bio}
+          </p>
+        )}
+
+        {/* Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg">
+          {stats.map((stat, index) => (
+            <div key={index} className="text-center">
+              <div className="text-2xl font-bold text-emerald-600 mb-1">
+                {stat.value}
+              </div>
+              <div className="text-sm text-gray-600">{stat.label}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Skills & Rate */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mt-6 pt-6 border-t border-gray-200">
+          {user.skills && user.skills.length > 0 && (
+            <div className="flex-1">
+              <h3 className="text-sm font-semibold text-gray-900 mb-2">Skills</h3>
+              <div className="flex flex-wrap gap-2">
+                {user.skills.map((skill, index) => (
+                  <span
+                    key={index}
+                    className="px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-lg text-sm font-medium border border-emerald-200"
+                  >
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {user.hourlyRate && (
+            <div className="mt-4 md:mt-0 md:ml-6">
+              <div className="text-right">
+                <div className="text-2xl font-bold text-emerald-600">
+                  {formatRate(user.hourlyRate)}
+                </div>
+                <div className="text-sm text-gray-600">Hourly Rate</div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ProfileHeader;

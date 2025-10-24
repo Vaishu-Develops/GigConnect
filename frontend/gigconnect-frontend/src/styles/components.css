@@ -1,0 +1,496 @@
+/* Enhanced Component Styles for GigConnect */
+
+/* Custom Card Variations */
+.card-hover {
+  @apply transition-all duration-300 ease-in-out;
+}
+
+.card-hover:hover {
+  @apply transform -translate-y-1 shadow-lg;
+}
+
+.card-glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Gradient Text Effects */
+.gradient-text-primary {
+  background: linear-gradient(135deg, #047857 0%, #7C3AED 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-text-secondary {
+  background: linear-gradient(135deg, #F59E0B 0%, #DC2626 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Button Enhancements */
+.btn-loading {
+  @apply relative overflow-hidden;
+}
+
+.btn-loading::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  animation: loading-shimmer 1.5s infinite;
+}
+
+@keyframes loading-shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+/* Form Enhancements */
+.form-group {
+  @apply mb-6;
+}
+
+.form-label {
+  @apply block text-sm font-medium text-gray-700 mb-2;
+}
+
+.form-helper {
+  @apply mt-1 text-sm text-gray-500;
+}
+
+.form-error {
+  @apply mt-1 text-sm text-red-600;
+}
+
+/* Loading Skeletons */
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton-text {
+  @apply h-4 bg-gray-200 rounded;
+}
+
+.skeleton-circle {
+  @apply rounded-full bg-gray-200;
+}
+
+.skeleton-rect {
+  @apply bg-gray-200 rounded;
+}
+
+/* Notification Badges */
+.badge-pulse {
+  animation: pulse 2s infinite;
+}
+
+.badge-dot {
+  @apply relative;
+}
+
+.badge-dot::after {
+  content: '';
+  @apply absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-ping;
+}
+
+.badge-dot::before {
+  content: '';
+  @apply absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full;
+}
+
+/* Message Bubble Animations */
+.message-enter {
+  animation: messageSlideIn 0.3s ease-out;
+}
+
+@keyframes messageSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Progress Bars */
+.progress-bar {
+  @apply w-full bg-gray-200 rounded-full overflow-hidden;
+}
+
+.progress-fill {
+  @apply h-2 transition-all duration-500 ease-out;
+}
+
+.progress-fill-success {
+  @apply bg-emerald-500;
+}
+
+.progress-fill-warning {
+  @apply bg-amber-500;
+}
+
+.progress-fill-error {
+  @apply bg-red-500;
+}
+
+/* Avatar Styles */
+.avatar {
+  @apply rounded-full object-cover;
+}
+
+.avatar-sm {
+  @apply w-8 h-8;
+}
+
+.avatar-md {
+  @apply w-12 h-12;
+}
+
+.avatar-lg {
+  @apply w-16 h-16;
+}
+
+.avatar-xl {
+  @apply w-24 h-24;
+}
+
+.avatar-online::after {
+  content: '';
+  @apply absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 rounded-full border-2 border-white;
+}
+
+.avatar-offline::after {
+  content: '';
+  @apply absolute bottom-0 right-0 w-3 h-3 bg-gray-400 rounded-full border-2 border-white;
+}
+
+/* Chat Styles */
+.chat-container {
+  height: calc(100vh - 200px);
+}
+
+.chat-message {
+  @apply max-w-xs lg:max-w-md;
+}
+
+.chat-message-own {
+  @apply ml-auto;
+}
+
+.chat-message-other {
+  @apply mr-auto;
+}
+
+.message-bubble {
+  @apply rounded-2xl px-4 py-2 shadow-sm;
+}
+
+.message-bubble-own {
+  @apply bg-emerald-600 text-white rounded-br-none;
+}
+
+.message-bubble-other {
+  @apply bg-gray-100 text-gray-900 rounded-bl-none;
+}
+
+/* Gig Card Enhancements */
+.gig-card-featured {
+  @apply relative border-2 border-amber-300;
+}
+
+.gig-card-featured::before {
+  content: 'Featured';
+  @apply absolute -top-3 left-4 bg-amber-500 text-white text-xs font-bold px-2 py-1 rounded-full;
+}
+
+.gig-card-urgent {
+  @apply border-l-4 border-red-500;
+}
+
+.gig-card-new {
+  @apply border-l-4 border-emerald-500;
+}
+
+/* Rating Stars */
+.rating-stars {
+  @apply inline-flex space-x-1;
+}
+
+.rating-star {
+  @apply text-amber-400 transition-colors;
+}
+
+.rating-star-empty {
+  @apply text-gray-300;
+}
+
+.rating-star-hover {
+  @apply text-amber-500 scale-110;
+}
+
+/* Payment Status Indicators */
+.payment-status {
+  @apply inline-flex items-center px-2 py-1 rounded-full text-xs font-medium;
+}
+
+.payment-status-pending {
+  @apply bg-amber-100 text-amber-800;
+}
+
+.payment-status-completed {
+  @apply bg-emerald-100 text-emerald-800;
+}
+
+.payment-status-failed {
+  @apply bg-red-100 text-red-800;
+}
+
+.payment-status-refunded {
+  @apply bg-gray-100 text-gray-800;
+}
+
+/* Skill Tags */
+.skill-tag {
+  @apply inline-flex items-center px-2 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-medium border border-emerald-200 transition-colors;
+}
+
+.skill-tag:hover {
+  @apply bg-emerald-100 border-emerald-300;
+}
+
+.skill-tag-removable {
+  @apply pr-1;
+}
+
+/* Navigation Enhancements */
+.nav-item {
+  @apply flex items-center px-4 py-2 text-gray-700 rounded-lg transition-colors;
+}
+
+.nav-item:hover {
+  @apply bg-gray-100 text-gray-900;
+}
+
+.nav-item-active {
+  @apply bg-emerald-50 text-emerald-700 border-r-2 border-emerald-600;
+}
+
+/* Table Enhancements */
+.table-responsive {
+  @apply overflow-x-auto;
+}
+
+.table {
+  @apply min-w-full divide-y divide-gray-200;
+}
+
+.table th {
+  @apply px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50;
+}
+
+.table td {
+  @apply px-6 py-4 whitespace-nowrap text-sm text-gray-900;
+}
+
+.table tr:hover {
+  @apply bg-gray-50;
+}
+
+/* Modal Enhancements */
+.modal-overlay {
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Toast Notifications */
+.toast {
+  animation: toastSlideIn 0.3s ease-out;
+}
+
+.toast-exit {
+  animation: toastSlideOut 0.3s ease-in;
+}
+
+@keyframes toastSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes toastSlideOut {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+/* File Upload Styles */
+.file-upload-zone {
+  @apply border-2 border-dashed border-gray-300 rounded-lg p-6 text-center transition-colors;
+}
+
+.file-upload-zone:hover {
+  @apply border-emerald-400 bg-emerald-50;
+}
+
+.file-upload-zone.drag-over {
+  @apply border-emerald-500 bg-emerald-100;
+}
+
+.file-preview {
+  @apply flex items-center space-x-3 p-3 bg-gray-50 rounded-lg border border-gray-200;
+}
+
+.file-preview-image {
+  @apply w-12 h-12 object-cover rounded;
+}
+
+/* Search and Filter Styles */
+.search-highlight {
+  @apply bg-yellow-200 px-1 rounded;
+}
+
+.filter-pill {
+  @apply inline-flex items-center px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm transition-colors;
+}
+
+.filter-pill:hover {
+  @apply bg-gray-200;
+}
+
+.filter-pill-active {
+  @apply bg-emerald-100 text-emerald-700 border border-emerald-200;
+}
+
+/* Statistics Cards */
+.stat-card {
+  @apply bg-white rounded-xl shadow-sm border border-gray-200 p-6 text-center transition-all duration-300;
+}
+
+.stat-card:hover {
+  @apply shadow-md transform -translate-y-1;
+}
+
+.stat-card-value {
+  @apply text-3xl font-bold mb-2;
+}
+
+.stat-card-label {
+  @apply text-gray-600 text-sm;
+}
+
+.stat-card-trend-up {
+  @apply text-emerald-600;
+}
+
+.stat-card-trend-down {
+  @apply text-red-600;
+}
+
+/* Timeline Styles */
+.timeline {
+  @apply space-y-4;
+}
+
+.timeline-item {
+  @apply flex items-start space-x-4;
+}
+
+.timeline-marker {
+  @apply w-3 h-3 bg-emerald-500 rounded-full mt-1 flex-shrink-0;
+}
+
+.timeline-content {
+  @apply flex-1;
+}
+
+.timeline-date {
+  @apply text-sm text-gray-500;
+}
+
+/* Responsive Utilities */
+.mobile-only {
+  @apply block lg:hidden;
+}
+
+.desktop-only {
+  @apply hidden lg:block;
+}
+
+/* Print Styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .print-break {
+    page-break-after: always;
+  }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .card {
+    border: 2px solid;
+  }
+  
+  .btn {
+    border: 2px solid;
+  }
+  
+  .form-input {
+    border: 2px solid;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
