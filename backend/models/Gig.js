@@ -26,6 +26,10 @@ const gigSchema = mongoose.Schema(
       type: [String],
       default: [],
     },
+    images: {
+      type: [String],
+      default: [],
+    },
     client: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,

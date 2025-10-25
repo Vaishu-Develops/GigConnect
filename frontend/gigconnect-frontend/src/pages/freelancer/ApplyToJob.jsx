@@ -50,9 +50,12 @@ const ApplyToJob = () => {
     setSubmitting(true);
 
     try {
-      // Create a chat/message with the proposal
+      // Create a chat first
+      const chat = await chatService.createChat(gig.client._id, gigId);
+      
+      // Send the application message
       await chatService.sendMessage({
-        chatId: `${gig.client._id}_${gigId}`, // This would be generated properly
+        chatId: chat._id,
         content: `Application for "${gig.title}":\n\nProposal: ${formData.proposal}\nBid: ₹${formData.bidAmount}\nTimeline: ${formData.timeline}`,
         messageType: 'application'
       });

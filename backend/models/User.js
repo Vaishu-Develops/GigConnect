@@ -33,6 +33,14 @@ const userSchema = mongoose.Schema(
       type: String,
       default: '',
     },
+    hourlyRate: {
+      type: Number,
+      default: 0,
+    },
+    avatar: {
+      type: String,
+      default: '',
+    },
   },
   {
     timestamps: true,

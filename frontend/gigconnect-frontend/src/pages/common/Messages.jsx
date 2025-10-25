@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { chatService } from '../../services/chatService';
 import ChatList from '../../components/chat/ChatList';
+import ChatThread from './ChatThread';
 import Input from '../../components/ui/Input';
 import { LoadingSpinner } from '../../components/ui/Loader';
 
 const Messages = () => {
   const { user } = useAuth();
   const { chatId } = useParams();
+  const navigate = useNavigate();
   
   const [chats, setChats] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -20,13 +22,30 @@ const Messages = () => {
 
   const fetchChats = async () => {
     try {
-      const chatsData = await chatService.getUserChats();
-      setChats(chatsData);
+      console.log('Fetching user chats...');
+      const response = await chatService.getUserChats();
+      console.log('Chats response:', response);
+      
+      if (response.success && Array.isArray(response.chats)) {
+        // Remove duplicates based on chatId
+        const uniqueChats = response.chats.filter((chat, index, self) => 
+          index === self.findIndex(c => c.chatId === chat.chatId)
+        );
+        setChats(uniqueChats);
+      } else {
+        console.error('Invalid chats response:', response);
+        setChats([]);
+      }
     } catch (error) {
       console.error('Failed to fetch chats:', error);
+      setChats([]);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleChatSelect = (selectedChatId) => {
+    navigate(`/messages/${selectedChatId}`);
   };
 
   const filteredChats = chats.filter(chat => {
@@ -62,27 +81,59 @@ const Messages = () => {
                   <div className="flex justify-center items-center h-32">
                     <LoadingSpinner />
                   </div>
+                ) : filteredChats.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <div className="text-4xl mb-2">💬</div>
+                    <p>No conversations yet</p>
+                    <p className="text-sm">Start chatting with users!</p>
+                  </div>
                 ) : (
-                  <ChatList chats={filteredChats} />
+                  <div className="space-y-3 p-4">
+                    {filteredChats.map((chat) => (
+                      <div
+                        key={chat.chatId}
+                        onClick={() => handleChatSelect(chat.chatId)}
+                        className={`p-3 rounded-lg cursor-pointer transition-colors ${
+                          chatId === chat.chatId 
+                            ? 'bg-emerald-50 border border-emerald-200' 
+                            : 'hover:bg-gray-50'
+                        }`}
+                      >
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center text-white font-semibold">
+                            {chat.otherUser?.name?.charAt(0)?.toUpperCase() || '?'}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex justify-between items-center">
+                              <p className="font-medium text-gray-900 truncate">
+                                {chat.otherUser?.name || 'Unknown User'}
+                              </p>
+                              <span className="text-xs text-gray-500">
+                                {new Date(chat.lastMessage?.createdAt).toLocaleTimeString([], {
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </span>
+                            </div>
+                            <p className="text-sm text-gray-600 truncate">
+                              {chat.lastMessage?.content || 'No messages yet'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
             </div>
           </div>
 
           {/* Chat Area */}
-          <div className="flex-1">
-            {chatId ? (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 h-[calc(100vh-200px)]">
-                {/* This would be replaced by ChatThread component */}
-                <div className="h-full flex items-center justify-center text-gray-500">
-                  <div className="text-center">
-                    <div className="text-6xl mb-4">💬</div>
-                    <p>Select a conversation to start messaging</p>
-                  </div>
-                </div>
-              </div>
+          <div className="flex-1 h-[calc(100vh-200px)]">
+            {chatId && chatId !== 'new' && chatId !== 'undefined' ? (
+              <ChatThread />
             ) : (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 h-[calc(100vh-200px)] flex items-center justify-center">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 h-full flex items-center justify-center">
                 <div className="text-center text-gray-500">
                   <div className="text-6xl mb-4">💬</div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">

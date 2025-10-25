@@ -82,6 +82,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/explore" element={<ExploreGigs />} />
+          <Route path="/gigs/:gigId" element={<JobDetails />} />
           <Route path="/browse-freelancers" element={<BrowseFreelancers />} />
           <Route path="/how-it-works" element={<HowItWorks />} />
           <Route path="/faq" element={<FAQ />} />

@@ -1,18 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { gigService } from '../../services/gigService';
+import { chatService } from '../../services/chatService';
 import Button from '../ui/Button';
 import Badge from '../ui/Badge';
 import { LoadingSpinner } from '../ui/Loader';
 
 const GigDetails = () => {
   const { gigId } = useParams();
+  const navigate = useNavigate();
   const { user } = useAuth();
   
   const [gig, setGig] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [savedGigs, setSavedGigs] = useState(() => {
+    const saved = localStorage.getItem('savedGigs');
+    return saved ? JSON.parse(saved) : [];
+  });
 
   useEffect(() => {
     fetchGigDetails();
@@ -61,8 +67,38 @@ const GigDetails = () => {
     );
   }
 
-  const isOwner = user && gig.client?._id === user._id;
-  const canApply = user && user.role === 'freelancer' && gig.status === 'open';
+  const isSaved = savedGigs.includes(gig?._id);
+  const isOwner = user?._id === gig?.client?._id;
+  const canApply = user && user.role === 'freelancer' && !isOwner && gig?.status === 'open';
+
+  const handleMessageClient = async () => {
+    try {
+      console.log('Creating chat with client:', gig.client._id, 'for gig:', gig._id);
+      const response = await chatService.createChat(gig.client._id, gig._id);
+      console.log('Chat creation response:', response);
+      
+      if (response.success && response.chat?._id) {
+        console.log('Navigating to chat:', response.chat._id);
+        navigate(`/messages/${response.chat._id}`);
+      } else {
+        console.error('Invalid chat response:', response);
+        navigate('/messages');
+      }
+    } catch (error) {
+      console.error('Failed to create chat:', error);
+      // Fallback to messages page
+      navigate('/messages');
+    }
+  };
+
+  const handleSaveForLater = () => {
+    const newSavedGigs = isSaved 
+      ? savedGigs.filter(id => id !== gig._id)
+      : [...savedGigs, gig._id];
+    
+    setSavedGigs(newSavedGigs);
+    localStorage.setItem('savedGigs', JSON.stringify(newSavedGigs));
+  };
 
   return (
     <div className="max-w-4xl mx-auto p-6">
@@ -144,11 +180,14 @@ const GigDetails = () => {
               </div>
             ) : canApply ? (
               <div className="space-y-3">
-                <Button className="w-full" as={Link} to={`/freelancer/apply/${gig._id}`}>
+                <Button className="w-full" as={Link} to={`/freelancer/apply-to-job/${gig._id}`}>
                   Apply Now
                 </Button>
-                <Button variant="outline" className="w-full">
-                  Save for Later
+                <Button variant="outline" className="w-full" onClick={handleSaveForLater}>
+                  {isSaved ? 'Saved' : 'Save for Later'}
+                </Button>
+                <Button variant="secondary" className="w-full" onClick={handleMessageClient}>
+                  Message Client
                 </Button>
               </div>
             ) : (

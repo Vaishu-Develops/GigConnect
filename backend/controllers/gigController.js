@@ -5,7 +5,7 @@ import Gig from '../models/Gig.js';
 // @access  Private (Client only)
 const createGig = async (req, res) => {
   try {
-    const { title, description, budget, category, location, skillsRequired } = req.body;
+    const { title, description, budget, category, location, skillsRequired, images } = req.body;
 
     // Check if user is a client
     if (req.user.role !== 'client') {
@@ -19,6 +19,7 @@ const createGig = async (req, res) => {
       category,
       location,
       skillsRequired,
+      images: images || [],
       client: req.user._id,
     });
 
@@ -89,6 +90,26 @@ const getGig = async (req, res) => {
   }
 };
 
+// @desc    Get my gigs (for client)
+// @route   GET /api/gigs/my-gigs
+// @access  Private (Client only)
+const getMyGigs = async (req, res) => {
+  try {
+    // Check if user is a client
+    if (req.user.role !== 'client') {
+      return res.status(403).json({ message: 'Only clients can view their gigs' });
+    }
+
+    const gigs = await Gig.find({ client: req.user._id })
+      .populate('client', 'name email')
+      .sort({ createdAt: -1 });
+
+    res.json(gigs);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // @desc    Update gig
 // @route   PUT /api/gigs/:id
 // @access  Private (Client only)
@@ -144,6 +165,7 @@ export {
   createGig,
   getGigs,
   getGig,
+  getMyGigs,
   updateGig,
   deleteGig,
 };

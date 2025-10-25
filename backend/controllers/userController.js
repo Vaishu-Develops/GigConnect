@@ -107,6 +107,8 @@ const updateUserProfile = async (req, res) => {
       user.bio = req.body.bio || user.bio;
       user.skills = req.body.skills || user.skills;
       user.location = req.body.location || user.location;
+      user.hourlyRate = req.body.hourlyRate !== undefined ? req.body.hourlyRate : user.hourlyRate;
+      user.avatar = req.body.avatar || user.avatar;
 
       if (req.body.password) {
         user.password = req.body.password;
@@ -122,6 +124,8 @@ const updateUserProfile = async (req, res) => {
         bio: updatedUser.bio,
         skills: updatedUser.skills,
         location: updatedUser.location,
+        hourlyRate: updatedUser.hourlyRate,
+        avatar: updatedUser.avatar,
         token: generateToken(updatedUser._id),
       });
     } else {
