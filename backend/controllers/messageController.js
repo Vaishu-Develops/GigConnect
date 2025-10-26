@@ -400,7 +400,7 @@ const createChat = async (req, res) => {
     const message = await Message.create({
       chatId,
       sender: userId,
-      content: gigId ? `Started conversation about gig ${gigId}` : 'Started conversation',
+      content: gigId ? `Hi! I'm interested in your gig. Let's discuss the details.` : 'Hi! Let\'s discuss your project.',
       messageType: 'system',
       readBy: [
         { userId: participantId, readAt: new Date() },

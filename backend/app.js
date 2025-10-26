@@ -4,6 +4,7 @@ import userRoutes from './routes/userRoutes.js';
 import gigRoutes from './routes/gigRoutes.js';
 import messageRoutes from './routes/messageRoutes.js';
 import reviewRoutes from './routes/reviewRoutes.js';
+import portfolioRoutes from './routes/portfolioRoutes.js';
 import adminRoutes from './routes/adminRoutes.js'; // Add this
 import paymentRoutes from './routes/paymentRoutes.js';
 import webhookRoutes from './routes/webhookRoutes.js';
@@ -26,6 +27,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/gigs', gigRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/reviews', reviewRoutes);
+app.use('/api/portfolio', portfolioRoutes);
 app.use('/api/admin', adminRoutes); // Add this
 app.use('/api/payments', paymentRoutes);
 app.use('/api/notifications', notificationRoutes);

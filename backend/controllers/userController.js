@@ -9,7 +9,7 @@ import generateToken from '../utils/generateToken.js';
 // @desc    Get all users (for testing)
 // @route   GET /api/users
 // @access  Public
-const getUsers = async (req, res) => {
+export const getUsers = async (req, res) => {
   try {
     const users = await User.find({}).select('-password');
     res.json(users);
@@ -18,7 +18,79 @@ const getUsers = async (req, res) => {
   }
 };
 
-const registerUser = async (req, res) => {
+// @desc    Get all freelancers
+// @route   GET /api/users/freelancers
+// @access  Public
+export const getFreelancers = async (req, res) => {
+  try {
+    console.log('getFreelancers called with query:', req.query);
+    const { search, location, skills, minRate, maxRate, sortBy } = req.query;
+    
+    // Build query - Remove isActive requirement temporarily to debug
+    let query = { role: 'freelancer' };
+    console.log('Initial query:', query);
+    
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { bio: { $regex: search, $options: 'i' } },
+        { skills: { $in: [new RegExp(search, 'i')] } }
+      ];
+    }
+    
+    if (location) {
+      query.location = { $regex: location, $options: 'i' };
+    }
+    
+    if (skills) {
+      const skillsArray = skills.split(',').map(skill => skill.trim());
+      query.skills = { $in: skillsArray.map(skill => new RegExp(skill, 'i')) };
+    }
+    
+    if (minRate || maxRate) {
+      query.hourlyRate = {};
+      if (minRate) query.hourlyRate.$gte = parseFloat(minRate);
+      if (maxRate) query.hourlyRate.$lte = parseFloat(maxRate);
+    }
+    
+    console.log('Final query:', query);
+    
+    // Build sort
+    let sort = {};
+    switch (sortBy) {
+      case 'rating':
+        sort = { averageRating: -1, totalReviews: -1 };
+        break;
+      case 'rate_low':
+        sort = { hourlyRate: 1 };
+        break;
+      case 'rate_high':
+        sort = { hourlyRate: -1 };
+        break;
+      case 'recent':
+        sort = { createdAt: -1 };
+        break;
+      default:
+        sort = { averageRating: -1 };
+    }
+    
+    const freelancers = await User.find(query)
+      .select('-password')
+      .sort(sort)
+      .limit(50);
+    
+    console.log('Found freelancers:', freelancers.length);
+    console.log('Freelancer names:', freelancers.map(f => f.name));
+    res.json(freelancers);
+  } catch (error) {
+    res.status(500).json({ 
+      success: false,
+      message: error.message 
+    });
+  }
+};
+
+export const registerUser = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
 
@@ -55,7 +127,7 @@ const registerUser = async (req, res) => {
 // @desc    Auth user & get token
 // @route   POST /api/users/login
 // @access  Public
-const loginUser = async (req, res) => {
+export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -80,7 +152,7 @@ const loginUser = async (req, res) => {
 // @desc    Get user profile
 // @route   GET /api/users/profile
 // @access  Private
-const getUserProfile = async (req, res) => {
+export const getUserProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user._id).select('-password');
 
@@ -97,7 +169,7 @@ const getUserProfile = async (req, res) => {
 // @desc    Update user profile
 // @route   PUT /api/users/profile
 // @access  Private
-const updateUserProfile = async (req, res) => {
+export const updateUserProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
 
@@ -139,7 +211,7 @@ const updateUserProfile = async (req, res) => {
 // @desc    Get user by ID
 // @route   GET /api/users/:id
 // @access  Public
-const getUserById = async (req, res) => {
+export const getUserById = async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select('-password');
     if (user) {
@@ -155,7 +227,7 @@ const getUserById = async (req, res) => {
 // @desc    Update user by ID (admin or user)
 // @route   PUT /api/users/:id
 // @access  Private (protect handled by routes when needed)
-const updateUserById = async (req, res) => {
+export const updateUserById = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
@@ -178,7 +250,7 @@ const updateUserById = async (req, res) => {
 // @desc    Delete user by ID
 // @route   DELETE /api/users/:id
 // @access  Private/Admin
-const deleteUserById = async (req, res) => {
+export const deleteUserById = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
@@ -192,7 +264,7 @@ const deleteUserById = async (req, res) => {
 // @desc    Update user status
 // @route   PUT /api/users/:id/status
 // @access  Private/Admin
-const updateUserStatus = async (req, res) => {
+export const updateUserStatus = async (req, res) => {
   try {
     const { status } = req.body;
     const user = await User.findById(req.params.id);
@@ -208,7 +280,7 @@ const updateUserStatus = async (req, res) => {
 // @desc    Get user stats
 // @route   GET /api/users/:id/stats
 // @access  Public
-const getUserStats = async (req, res) => {
+export const getUserStats = async (req, res) => {
   try {
     // Basic placeholder stats
     const stats = {
@@ -225,7 +297,7 @@ const getUserStats = async (req, res) => {
 // @desc    Add portfolio item
 // @route   POST /api/users/portfolio
 // @access  Private
-const addPortfolioItem = async (req, res) => {
+export const addPortfolioItem = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: 'User not found' });
@@ -242,7 +314,7 @@ const addPortfolioItem = async (req, res) => {
 // @desc    Delete portfolio item
 // @route   DELETE /api/users/portfolio/:itemId
 // @access  Private
-const deletePortfolioItem = async (req, res) => {
+export const deletePortfolioItem = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
     if (!user || !user.portfolio) return res.status(404).json({ message: 'Item not found' });
@@ -254,20 +326,7 @@ const deletePortfolioItem = async (req, res) => {
   }
 };
 
-export {
-  registerUser,
-  loginUser,
-  getUserProfile,
-  updateUserProfile,
-  getUsers, // Add this
-  getUserById,
-  updateUserById,
-  deleteUserById,
-  updateUserStatus,
-  getUserStats,
-  addPortfolioItem,
-  deletePortfolioItem,
-};
+// All functions are exported individually above
 
 
 

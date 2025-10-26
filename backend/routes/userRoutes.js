@@ -1,6 +1,7 @@
 import express from 'express';
 import {
   getUsers,
+  getFreelancers,
   registerUser,
   loginUser,
   getUserProfile,
@@ -17,6 +18,8 @@ import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
+router.get('/test', (req, res) => res.json({ message: 'Test route works!' }));
+router.get('/freelancers', getFreelancers); // Get only freelancers - MUST be before /:id
 router.get('/', getUsers); // Add this line
 router.post('/register', registerUser);
 router.post('/login', loginUser);

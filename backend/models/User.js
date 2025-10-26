@@ -41,6 +41,61 @@ const userSchema = mongoose.Schema(
       type: String,
       default: '',
     },
+    // Freelancer-specific fields
+    totalEarnings: {
+      type: Number,
+      default: 0,
+    },
+    completedProjects: {
+      type: Number,
+      default: 0,
+    },
+    averageRating: {
+      type: Number,
+      default: 0,
+    },
+    totalReviews: {
+      type: Number,
+      default: 0,
+    },
+    experience: {
+      type: String,
+      default: '',
+    },
+    education: [{
+      type: String
+    }],
+    certifications: [{
+      type: String
+    }],
+    languages: [{
+      type: String
+    }],
+    // Client-specific fields
+    companyName: {
+      type: String,
+      default: '',
+    },
+    companySize: {
+      type: String,
+      default: '',
+    },
+    totalSpent: {
+      type: Number,
+      default: 0,
+    },
+    projectsPosted: {
+      type: Number,
+      default: 0,
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

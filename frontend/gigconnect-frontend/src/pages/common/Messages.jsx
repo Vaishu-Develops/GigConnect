@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { chatService } from '../../services/chatService';
 import ChatList from '../../components/chat/ChatList';
@@ -11,10 +11,46 @@ const Messages = () => {
   const { user } = useAuth();
   const { chatId } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   
   const [chats, setChats] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+
+  useEffect(() => {
+    fetchChats();
+    
+    // Handle new chat creation from URL params
+    const newUserId = searchParams.get('userId');
+    if (newUserId && newUserId !== user?.id) {
+      handleCreateNewChat(newUserId);
+    }
+  }, [searchParams]);
+
+  const handleCreateNewChat = async (targetUserId) => {
+    try {
+      // Check if chat already exists
+      const existingChat = chats.find(chat => 
+        chat.participants?.some(p => p._id === targetUserId)
+      );
+      
+      if (existingChat) {
+        navigate(`/messages/${existingChat.chatId}`);
+        return;
+      }
+
+      // Create new chat
+      const response = await chatService.createChat(targetUserId);
+      
+      if (response.success && response.chat) {
+        // Refresh chats and navigate to new chat
+        await fetchChats();
+        navigate(`/messages/${response.chat._id}`);
+      }
+    } catch (error) {
+      console.error('Failed to create new chat:', error);
+    }
+  };
 
   useEffect(() => {
     fetchChats();
