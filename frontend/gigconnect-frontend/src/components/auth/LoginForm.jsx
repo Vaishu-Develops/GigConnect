@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Input from '../ui/Input';
+import PasswordInput from '../ui/PasswordInput';
 import Button from '../ui/Button';
 
 const LoginForm = () => {
@@ -70,9 +71,8 @@ const LoginForm = () => {
           required
         />
 
-        <Input
+        <PasswordInput
           label="Password"
-          type="password"
           name="password"
           value={formData.password}
           onChange={handleChange}

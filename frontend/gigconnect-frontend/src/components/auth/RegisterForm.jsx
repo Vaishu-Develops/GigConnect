@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Input from '../ui/Input';
+import PasswordInput from '../ui/PasswordInput';
 import Button from '../ui/Button';
 
 const RegisterForm = () => {
@@ -21,6 +22,13 @@ const RegisterForm = () => {
 
   // Get role from URL params if available
   const urlRole = searchParams.get('role');
+
+  // Set role from URL parameter when component mounts
+  useEffect(() => {
+    if (urlRole && (urlRole === 'client' || urlRole === 'freelancer')) {
+      setFormData(prev => ({ ...prev, role: urlRole }));
+    }
+  }, [urlRole]);
 
   const handleChange = (e) => {
     setFormData(prev => ({
@@ -45,7 +53,8 @@ const RegisterForm = () => {
       return;
     }
 
-    if (!formData.role) {
+    const currentRole = formData.role || urlRole;
+    if (!currentRole) {
       setError('Please select a role');
       setLoading(false);
       return;
@@ -53,6 +62,8 @@ const RegisterForm = () => {
 
     try {
       const { confirmPassword, ...registerData } = formData;
+      // Use the role from formData or urlRole
+      registerData.role = currentRole;
       const result = await register(registerData);
       
       if (result.success) {
@@ -143,9 +154,8 @@ const RegisterForm = () => {
           required
         />
 
-        <Input
+        <PasswordInput
           label="Password"
-          type="password"
           name="password"
           value={formData.password}
           onChange={handleChange}
@@ -154,9 +164,8 @@ const RegisterForm = () => {
           minLength={6}
         />
 
-        <Input
+        <PasswordInput
           label="Confirm Password"
-          type="password"
           name="confirmPassword"
           value={formData.confirmPassword}
           onChange={handleChange}
@@ -175,7 +184,7 @@ const RegisterForm = () => {
         <Button
           type="submit"
           loading={loading}
-          disabled={!formData.role && !urlRole}
+          disabled={!(formData.role || urlRole)}
           className="w-full"
         >
           Create Account
