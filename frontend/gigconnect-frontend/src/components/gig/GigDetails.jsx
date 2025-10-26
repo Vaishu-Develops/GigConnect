@@ -69,7 +69,18 @@ const GigDetails = () => {
 
   const isSaved = savedGigs.includes(gig?._id);
   const isOwner = user?._id === gig?.client?._id;
-  const canApply = user && user.role === 'freelancer' && !isOwner && gig?.status === 'open';
+  
+  // Only freelancers can apply, and only for active gigs
+  const canApply = user && user.role === 'freelancer' && !isOwner && (!gig?.status || gig?.status === 'open' || gig?.status === 'active');
+  
+  console.log('GigDetails - Debug Info:', {
+    userId: user?._id,
+    userRole: user?.role,
+    gigOwnerId: gig?.client?._id,
+    isOwner,
+    gigStatus: gig?.status,
+    canApply
+  });
 
   const handleMessageClient = async () => {
     try {
@@ -193,7 +204,20 @@ const GigDetails = () => {
             ) : (
               <div className="text-center text-gray-600">
                 {user ? (
-                  <p>This gig is not available for applications</p>
+                  isOwner ? (
+                    <p>This is your own gig</p>
+                  ) : user.role === 'client' ? (
+                    <p>Only freelancers can apply to gigs</p>
+                  ) : gig?.status === 'closed' ? (
+                    <p>This gig is no longer accepting applications</p>
+                  ) : gig?.status === 'completed' ? (
+                    <p>This gig has been completed</p>
+                  ) : (
+                    <div className="space-y-3">
+                      <p>This gig is currently not available for applications</p>
+                      <p className="text-sm text-gray-500">Status: {gig?.status || 'Unknown'}</p>
+                    </div>
+                  )
                 ) : (
                   <div className="space-y-3">
                     <p>Sign in to apply for this gig</p>
