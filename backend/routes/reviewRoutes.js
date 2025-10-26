@@ -4,7 +4,11 @@ import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-router.post('/', protect, submitReview);
-router.get('/:freelancerId', getFreelancerReviews);
+// Public routes
+router.get('/freelancer/:freelancerId', getFreelancerReviews);
+
+// Private routes
+router.use(protect);
+router.post('/', submitReview);
 
 export default router;

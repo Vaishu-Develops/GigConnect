@@ -6,8 +6,13 @@ export const reviewService = {
     return response.data;
   },
 
+  async getFreelancerReviews(freelancerId, page = 1, limit = 10) {
+    const response = await api.get(`/reviews/freelancer/${freelancerId}?page=${page}&limit=${limit}`);
+    return response.data;
+  },
+
   async getUserReviews(userId) {
-    const response = await api.get(`/reviews/${userId}`);
+    const response = await api.get(`/reviews/freelancer/${userId}`);
     return response.data;
   },
 
@@ -24,5 +29,5 @@ export const reviewService = {
   async deleteReview(reviewId) {
     const response = await api.delete(`/reviews/${reviewId}`);
     return response.data;
-  },
+  }
 };
