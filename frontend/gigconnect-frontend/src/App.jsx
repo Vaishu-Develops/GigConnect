@@ -29,6 +29,7 @@ import Messages from './pages/common/Messages'
 import ChatThread from './pages/common/ChatThread'
 import Notifications from './pages/common/Notifications'
 import Settings from './pages/common/Settings'
+import SavedGigs from './pages/common/SavedGigs'
 
 // Client-Specific Pages
 import PostGig from './pages/client/PostGig'
@@ -123,6 +124,14 @@ function App() {
             }
           />
           <Route
+            path="/messages/new"
+            element={
+              <ProtectedRoute>
+                <Messages />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/messages/:chatId"
             element={
               <ProtectedRoute>
@@ -143,6 +152,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Settings />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/saved-gigs"
+            element={
+              <ProtectedRoute>
+                <SavedGigs />
               </ProtectedRoute>
             }
           />

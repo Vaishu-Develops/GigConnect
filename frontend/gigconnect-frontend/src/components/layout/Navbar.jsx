@@ -64,6 +64,9 @@ const Navbar = () => {
                     <Link to="/profile" className="block px-4 py-2 text-gray-800 hover:bg-emerald-50">
                       Profile
                     </Link>
+                    <Link to="/saved-gigs" className="block px-4 py-2 text-gray-800 hover:bg-emerald-50">
+                      Saved Gigs
+                    </Link>
                     <Link to="/settings" className="block px-4 py-2 text-gray-800 hover:bg-emerald-50">
                       Settings
                     </Link>

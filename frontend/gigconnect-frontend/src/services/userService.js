@@ -37,8 +37,8 @@ export const userService = {
   },
 
   async getFreelancers(filters = {}) {
-    const params = new URLSearchParams({ role: 'freelancer', ...filters });
-    const response = await api.get(`/users?${params}`);
+    const params = new URLSearchParams(filters);
+    const response = await api.get(`/users/freelancers?${params}`);
     return response.data;
   },
 
