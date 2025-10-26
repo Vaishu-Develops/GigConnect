@@ -23,10 +23,13 @@ const BrowseFreelancers = () => {
   const fetchFreelancers = async () => {
     setLoading(true);
     try {
-      const users = await userService.getUsers({ role: 'freelancer', ...filters });
-      setFreelancers(users);
+      const users = await userService.getFreelancers(filters);
+      // Ensure users is an array before setting state
+      setFreelancers(Array.isArray(users) ? users : []);
     } catch (error) {
       console.error('Failed to fetch freelancers:', error);
+      // Set empty array on error to prevent map errors
+      setFreelancers([]);
     } finally {
       setLoading(false);
     }
@@ -163,7 +166,7 @@ const BrowseFreelancers = () => {
                   <LoadingCard key={index} />
                 ))}
               </div>
-            ) : freelancers.length === 0 ? (
+            ) : !Array.isArray(freelancers) || freelancers.length === 0 ? (
               <div className="text-center py-12">
                 <div className="text-6xl mb-4">🔍</div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
