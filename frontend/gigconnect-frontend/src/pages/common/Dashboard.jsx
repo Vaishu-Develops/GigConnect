@@ -56,7 +56,7 @@ const ClientDashboard = () => {
       {/* Quick Actions */}
       <div className="md:col-span-2 lg:col-span-3 bg-white rounded-xl shadow-sm p-6 border border-gray-200">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           <Link
             to="/client/post-gig"
             className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white p-4 rounded-lg text-center hover:shadow-lg transition-all duration-300"
@@ -71,6 +71,14 @@ const ClientDashboard = () => {
           >
             <div className="text-2xl mb-2">💼</div>
             <div className="font-medium">My Gigs</div>
+          </Link>
+
+          <Link
+            to="/client/contracts"
+            className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 rounded-lg text-center hover:shadow-lg transition-all duration-300"
+          >
+            <div className="text-2xl mb-2">📋</div>
+            <div className="font-medium">My Contracts</div>
           </Link>
 
           <Link
@@ -119,7 +127,7 @@ const FreelancerDashboard = () => {
       {/* Quick Actions */}
       <div className="md:col-span-2 lg:col-span-3 bg-white rounded-xl shadow-sm p-6 border border-gray-200">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           <Link
             to="/freelancer/browse-jobs"
             className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white p-4 rounded-lg text-center hover:shadow-lg transition-all duration-300"
@@ -134,6 +142,14 @@ const FreelancerDashboard = () => {
           >
             <div className="text-2xl mb-2">📨</div>
             <div className="font-medium">My Applications</div>
+          </Link>
+
+          <Link
+            to="/freelancer/hire-proposals"
+            className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 rounded-lg text-center hover:shadow-lg transition-all duration-300"
+          >
+            <div className="text-2xl mb-2">🎯</div>
+            <div className="font-medium">Hire Proposals</div>
           </Link>
 
           <Link

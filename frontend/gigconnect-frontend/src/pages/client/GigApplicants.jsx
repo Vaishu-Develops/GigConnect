@@ -11,6 +11,7 @@ const GigApplicants = () => {
   const [gig, setGig] = useState(null);
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -18,15 +19,28 @@ const GigApplicants = () => {
 
   const fetchData = async () => {
     try {
-      const [gigData, applicationsData] = await Promise.all([
-        gigService.getGigById(gigId),
-        gigService.getGigApplications(gigId)
-      ]);
+      setError(null);
+      console.log('Fetching gig with ID:', gigId);
       
+      // First try to get the gig
+      const gigData = await gigService.getGigById(gigId);
+      console.log('Gig data received:', gigData);
       setGig(gigData);
-      setApplications(applicationsData);
+      
+      // Try to get applications, but handle gracefully if not implemented
+      try {
+        const applicationsData = await gigService.getGigApplications(gigId);
+        console.log('Applications data received:', applicationsData);
+        setApplications(applicationsData);
+      } catch (appError) {
+        console.log('Applications endpoint not available yet:', appError.message);
+        // Set empty applications array if endpoint doesn't exist
+        setApplications([]);
+      }
+      
     } catch (error) {
-      console.error('Failed to fetch data:', error);
+      console.error('Failed to fetch gig data:', error);
+      setError(error.response?.data?.message || error.message || 'Failed to load gig data');
     } finally {
       setLoading(false);
     }
@@ -59,7 +73,7 @@ const GigApplicants = () => {
     );
   }
 
-  if (!gig) {
+  if (!gig && !loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -67,9 +81,18 @@ const GigApplicants = () => {
           <h3 className="text-xl font-semibold text-gray-900 mb-2">
             Gig not found
           </h3>
-          <p className="text-gray-600">
-            The gig you're looking for doesn't exist.
+          <p className="text-gray-600 mb-4">
+            {error || "The gig you're looking for doesn't exist."}
           </p>
+          <p className="text-sm text-gray-500 mb-4">
+            Gig ID: {gigId}
+          </p>
+          <button 
+            onClick={() => window.history.back()}
+            className="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700"
+          >
+            Go Back
+          </button>
         </div>
       </div>
     );
@@ -102,12 +125,20 @@ const GigApplicants = () => {
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 No applicants yet
               </h3>
-              <p className="text-gray-600 mb-6">
-                Your gig hasn't received any applications yet. Check back later or consider updating your gig details.
+              <p className="text-gray-600 mb-4">
+                Your gig hasn't received any applications yet, or the applications feature is still being developed.
               </p>
-              <Button as={Link} to={`/client/edit-gig/${gigId}`}>
-                Edit Gig Details
-              </Button>
+              <p className="text-sm text-blue-600 mb-6">
+                💡 Tip: The gig application system will allow freelancers to apply for your gigs and you can review and hire them from here.
+              </p>
+              <div className="space-x-4">
+                <Button as={Link} to={`/client/edit-gig/${gigId}`} variant="secondary">
+                  Edit Gig Details
+                </Button>
+                <Button as={Link} to="/client/my-gigs">
+                  Back to My Gigs
+                </Button>
+              </div>
             </div>
           ) : (
             applications.map((application) => (

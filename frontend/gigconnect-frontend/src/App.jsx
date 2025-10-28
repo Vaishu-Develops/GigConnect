@@ -30,11 +30,14 @@ import ChatThread from './pages/common/ChatThread'
 import Notifications from './pages/common/Notifications'
 import Settings from './pages/common/Settings'
 import SavedGigs from './pages/common/SavedGigs'
+import Contracts from './pages/common/Contracts'
+import ContractDetails from './pages/common/ContractDetails'
 
 // Client-Specific Pages
 import PostGig from './pages/client/PostGig'
 import MyGigs from './pages/client/MyGigs'
 import EditGig from './pages/client/EditGig'
+import DirectHire from './pages/client/DirectHire';
 import GigApplicants from './pages/client/GigApplicants'
 import ActiveProjects from './pages/client/ActiveProjects'
 import ProjectDetails from './pages/client/ProjectDetails'
@@ -53,6 +56,7 @@ import JobWorkspace from './pages/freelancer/JobWorkspace'
 import CompletedJobs from './pages/freelancer/CompletedJobs'
 import MyReviews from './pages/freelancer/MyReviews'
 import Earnings from './pages/freelancer/Earnings'
+import HireProposals from './pages/freelancer/HireProposals'
 
 // Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard'
@@ -163,6 +167,30 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/contracts"
+            element={
+              <ProtectedRoute>
+                <Contracts />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/client/contracts"
+            element={
+              <ProtectedRoute requiredRole="client">
+                <Contracts />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/contracts/:contractId"
+            element={
+              <ProtectedRoute>
+                <ContractDetails />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Client-Specific Routes */}
           <Route
@@ -194,6 +222,14 @@ function App() {
             element={
               <ProtectedRoute requiredRole="client">
                 <GigApplicants />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/hire-freelancer"
+            element={
+              <ProtectedRoute requiredRole="client">
+                <DirectHire />
               </ProtectedRoute>
             }
           />
@@ -276,6 +312,14 @@ function App() {
             element={
               <ProtectedRoute requiredRole="freelancer">
                 <MyApplications />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/freelancer/hire-proposals"
+            element={
+              <ProtectedRoute requiredRole="freelancer">
+                <HireProposals />
               </ProtectedRoute>
             }
           />

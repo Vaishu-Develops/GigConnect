@@ -7,9 +7,10 @@ const Button = ({
   disabled = false, 
   loading = false,
   className = '',
+  as,
   ...props 
 }) => {
-  const baseClasses = 'font-semibold rounded-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
+  const baseClasses = 'inline-flex items-center justify-center font-semibold rounded-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
   
   const variants = {
     primary: 'bg-gradient-to-r from-emerald-600 to-purple-600 text-white hover:shadow-lg hover:scale-105 focus:ring-emerald-500',
@@ -27,11 +28,16 @@ const Button = ({
 
   const classes = `${baseClasses} ${variants[variant]} ${sizes[size]} ${className}`;
 
+  // Use the 'as' prop to render different components (like Link)
+  const Component = as || 'button';
+
+  // For links, we don't want disabled state to apply
+  const componentProps = as ? { ...props } : { disabled: disabled || loading, ...props };
+
   return (
-    <button 
+    <Component 
       className={classes} 
-      disabled={disabled || loading}
-      {...props}
+      {...componentProps}
     >
       {loading ? (
         <div className="flex items-center justify-center space-x-2">
@@ -41,7 +47,7 @@ const Button = ({
       ) : (
         children
       )}
-    </button>
+    </Component>
   );
 };
 

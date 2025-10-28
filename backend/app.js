@@ -9,6 +9,7 @@ import adminRoutes from './routes/adminRoutes.js'; // Add this
 import paymentRoutes from './routes/paymentRoutes.js';
 import webhookRoutes from './routes/webhookRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
+import contractRoutes from './routes/contractRoutes.js';
 
 const app = express();
 
@@ -17,7 +18,11 @@ app.use('/api/webhooks', webhookRoutes);
 
 // Middleware
 app.use(cors({
-  origin: process.env.CLIENT_URL || "http://localhost:5173",
+  origin: [
+    process.env.CLIENT_URL || "http://localhost:5173",
+    "http://localhost:5174",
+    "http://localhost:3000"
+  ],
   credentials: true
 }));
 app.use(express.json());
@@ -31,6 +36,7 @@ app.use('/api/portfolio', portfolioRoutes);
 app.use('/api/admin', adminRoutes); // Add this
 app.use('/api/payments', paymentRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/contracts', contractRoutes);
 
 
 // Home route

@@ -1,12 +1,67 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { navigateToChat } from '../../utils/chatUtils';
 import Rating from '../ui/Rating';
 import Badge from '../ui/Badge';
 import Button from '../ui/Button';
 
 const ProfileHeader = ({ user, isOwnProfile = false }) => {
   const { user: currentUser } = useAuth();
+  const navigate = useNavigate();
+  const [messageLoading, setMessageLoading] = useState(false);
+
+  const handleMessage = async () => {
+    if (!currentUser) {
+      navigate('/login');
+      return;
+    }
+
+    if (currentUser._id === user._id) {
+      alert("You can't message yourself!");
+      return;
+    }
+
+    setMessageLoading(true);
+    try {
+      await navigateToChat(user._id, navigate);
+    } catch (error) {
+      console.error('Failed to start conversation:', error);
+      alert('Failed to start conversation. Please try again.');
+    } finally {
+      setMessageLoading(false);
+    }
+  };
+
+  const handleHireMe = () => {
+    if (!currentUser) {
+      navigate('/login');
+      return;
+    }
+
+    if (currentUser._id === user._id) {
+      alert("You can't hire yourself!");
+      return;
+    }
+
+    if (user.role !== 'freelancer') {
+      alert("You can only hire freelancers!");
+      return;
+    }
+
+    if (currentUser.role !== 'client') {
+      alert("Only clients can hire freelancers!");
+      return;
+    }
+
+    // Navigate to direct hire page
+    navigate('/hire-freelancer', { 
+      state: { 
+        freelancer: user,
+        mode: 'direct-hire'
+      }
+    });
+  };
 
   const formatRate = (rate) => {
     return new Intl.NumberFormat('en-IN', {
@@ -64,16 +119,24 @@ const ProfileHeader = ({ user, isOwnProfile = false }) => {
 
           <div className="flex space-x-3 mt-4 md:mt-0">
             {isOwnProfile ? (
-              <Button as={Link} to="/profile/edit">
+              <Button as={Link} to="/settings">
                 Edit Profile
               </Button>
             ) : (
               <>
-                <Button as={Link} to={`/messages/new?userId=${user._id}`}>
-                  Message
+                <Button 
+                  onClick={handleMessage}
+                  disabled={messageLoading}
+                  className="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50"
+                >
+                  {messageLoading ? 'Connecting...' : 'Message'}
                 </Button>
                 {currentUser?.role === 'client' && user.role === 'freelancer' && (
-                  <Button variant="secondary">
+                  <Button 
+                    variant="secondary" 
+                    onClick={handleHireMe}
+                    className="border-emerald-600 text-emerald-600 hover:bg-emerald-50"
+                  >
                     Hire Me
                   </Button>
                 )}

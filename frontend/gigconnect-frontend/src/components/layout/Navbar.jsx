@@ -2,9 +2,13 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useNotification } from '../../context/NotificationContext';
+import { useContractNotifications } from '../../hooks/useContractNotifications';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
+  const { unreadCount } = useNotification();
+  const { pendingProposals } = useContractNotifications();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -54,6 +58,29 @@ const Navbar = () => {
                 <Link to="/dashboard" className="text-gray-700 hover:text-emerald-600 font-medium">
                   Dashboard
                 </Link>
+                {user.role === 'client' && (
+                  <Link to="/client/contracts" className="text-gray-700 hover:text-emerald-600 font-medium">
+                    Contracts
+                  </Link>
+                )}
+                {user.role === 'freelancer' && (
+                  <Link to="/freelancer/hire-proposals" className="text-gray-700 hover:text-emerald-600 font-medium relative">
+                    Proposals
+                    {pendingProposals > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                        {pendingProposals > 9 ? '9+' : pendingProposals}
+                      </span>
+                    )}
+                  </Link>
+                )}
+                <Link to="/notifications" className="text-gray-700 hover:text-emerald-600 font-medium relative">
+                  🔔
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
+                </Link>
                 <div className="relative group">
                   <img
                     src={user.avatar || '/default-avatar.png'}
@@ -64,6 +91,38 @@ const Navbar = () => {
                     <Link to="/profile" className="block px-4 py-2 text-gray-800 hover:bg-emerald-50">
                       Profile
                     </Link>
+                    <Link to="/dashboard" className="block px-4 py-2 text-gray-800 hover:bg-emerald-50">
+                      Dashboard
+                    </Link>
+                    
+                    {/* Role-specific links */}
+                    {user.role === 'client' && (
+                      <>
+                        <Link to="/client/contracts" className="block px-4 py-2 text-gray-800 hover:bg-emerald-50">
+                          My Contracts
+                        </Link>
+                        <Link to="/client/my-gigs" className="block px-4 py-2 text-gray-800 hover:bg-emerald-50">
+                          My Gigs
+                        </Link>
+                      </>
+                    )}
+                    
+                    {user.role === 'freelancer' && (
+                      <>
+                        <Link to="/freelancer/hire-proposals" className="block px-4 py-2 text-gray-800 hover:bg-emerald-50 relative">
+                          Hire Proposals
+                          {pendingProposals > 0 && (
+                            <span className="absolute right-2 top-2 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                              {pendingProposals > 9 ? '9+' : pendingProposals}
+                            </span>
+                          )}
+                        </Link>
+                        <Link to="/freelancer/applications" className="block px-4 py-2 text-gray-800 hover:bg-emerald-50">
+                          My Applications
+                        </Link>
+                      </>
+                    )}
+                    
                     <Link to="/saved-gigs" className="block px-4 py-2 text-gray-800 hover:bg-emerald-50">
                       Saved Gigs
                     </Link>
