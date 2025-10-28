@@ -2,8 +2,16 @@ import api from './api';
 
 export const chatService = {
   async getUserChats() {
-    const response = await api.get('/messages/chats');
-    return response.data;
+    try {
+      console.log('Making request to /messages/chats');
+      const response = await api.get('/messages/chats');
+      console.log('Raw API response:', response);
+      return response.data;
+    } catch (error) {
+      console.error('Error in getUserChats:', error);
+      console.error('Error response:', error.response);
+      throw error;
+    }
   },
 
   async getChat(chatId) {
@@ -32,7 +40,15 @@ export const chatService = {
   },
 
   async createChat(participantId, gigId = null) {
-    const response = await api.post('/messages/chats', { participantId, gigId });
-    return response.data;
+    try {
+      console.log('Creating chat with participant:', participantId, 'gig:', gigId);
+      const response = await api.post('/messages/chats', { participantId, gigId });
+      console.log('Create chat response:', response);
+      return response.data;
+    } catch (error) {
+      console.error('Error in createChat:', error);
+      console.error('Error response:', error.response);
+      throw error;
+    }
   },
 };

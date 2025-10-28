@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { chatService } from '../../services/chatService';
@@ -16,9 +16,12 @@ const Messages = () => {
   const [chats, setChats] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const fetchingRef = useRef(false);
 
   useEffect(() => {
-    fetchChats();
+    if (!fetchingRef.current) {
+      fetchChats();
+    }
     
     // Handle new chat creation from URL params
     const newUserId = searchParams.get('userId');
@@ -57,26 +60,41 @@ const Messages = () => {
   }, []);
 
   const fetchChats = async () => {
+    if (fetchingRef.current) return;
+    
     try {
+      fetchingRef.current = true;
       console.log('Fetching user chats...');
+      setLoading(true);
       const response = await chatService.getUserChats();
       console.log('Chats response:', response);
       
-      if (response.success && Array.isArray(response.chats)) {
+      if (response && response.success && Array.isArray(response.chats)) {
         // Remove duplicates based on chatId
         const uniqueChats = response.chats.filter((chat, index, self) => 
           index === self.findIndex(c => c.chatId === chat.chatId)
         );
         setChats(uniqueChats);
+        console.log('Successfully loaded chats:', uniqueChats.length);
+      } else if (Array.isArray(response)) {
+        // Handle direct array response
+        setChats(response);
+        console.log('Successfully loaded chats (direct array):', response.length);
       } else {
-        console.error('Invalid chats response:', response);
+        console.error('Invalid chats response structure:', response);
         setChats([]);
       }
     } catch (error) {
       console.error('Failed to fetch chats:', error);
+      console.error('Error details:', {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data
+      });
       setChats([]);
     } finally {
       setLoading(false);
+      fetchingRef.current = false;
     }
   };
 
@@ -114,8 +132,9 @@ const Messages = () => {
               {/* Chat List */}
               <div className="h-[calc(100vh-200px)] overflow-y-auto">
                 {loading ? (
-                  <div className="flex justify-center items-center h-32">
+                  <div className="flex flex-col justify-center items-center h-32 text-gray-600">
                     <LoadingSpinner />
+                    <p className="mt-2 text-sm">Loading conversations...</p>
                   </div>
                 ) : filteredChats.length === 0 ? (
                   <div className="text-center py-8 text-gray-500">

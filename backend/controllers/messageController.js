@@ -427,115 +427,102 @@ const getUserChats = async (req, res) => {
     const userId = req.user._id;
     console.log('Getting chats for user:', userId);
 
-    // Find all messages where user is sender or recipient
-    const allMessages = await Message.find({
-      $or: [
-        { sender: userId },
-        { 'readBy.userId': userId }
-      ],
-      deleted: false,
-      chatId: { $exists: true, $ne: null }
-    })
-    .populate('sender', 'name email avatar')
-    .sort({ createdAt: -1 });
-
-    console.log('Found messages:', allMessages.length);
-
-    // Group by chatId and ensure uniqueness
-    const chatGroups = {};
-    allMessages.forEach(message => {
-      if (message.chatId && !chatGroups[message.chatId]) {
-        chatGroups[message.chatId] = [];
+    // Use aggregation pipeline for better performance
+    const chatsAggregation = await Message.aggregate([
+      {
+        $match: {
+          $or: [
+            { sender: userId },
+            { 'readBy.userId': userId }
+          ],
+          deleted: false,
+          chatId: { $exists: true, $ne: null }
+        }
+      },
+      {
+        $sort: { createdAt: -1 }
+      },
+      {
+        $group: {
+          _id: '$chatId',
+          lastMessage: { $first: '$$ROOT' },
+          messageCount: { $sum: 1 }
+        }
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'lastMessage.sender',
+          foreignField: '_id',
+          as: 'senderInfo',
+          pipeline: [{ $project: { name: 1, email: 1, avatar: 1 } }]
+        }
+      },
+      {
+        $addFields: {
+          'lastMessage.sender': { $arrayElemAt: ['$senderInfo', 0] }
+        }
+      },
+      {
+        $project: {
+          chatId: '$_id',
+          lastMessage: {
+            _id: '$lastMessage._id',
+            content: '$lastMessage.content',
+            createdAt: '$lastMessage.createdAt',
+            sender: '$lastMessage.sender'
+          },
+          messageCount: 1
+        }
+      },
+      {
+        $sort: { 'lastMessage.createdAt': -1 }
+      },
+      {
+        $limit: 50 // Limit to most recent 50 chats for performance
       }
-      if (message.chatId) {
-        chatGroups[message.chatId].push(message);
-      }
-    });
+    ]);
+
+    console.log('Found chat groups:', chatsAggregation.length);
 
     const chats = [];
-    for (const chatId of Object.keys(chatGroups)) {
-      const messages = chatGroups[chatId];
-      const latestMessage = messages[0]; // Already sorted by createdAt desc
+    for (const chatData of chatsAggregation) {
+      const { chatId, lastMessage } = chatData;
       
-      // Get unique participants with their full user data
-      const participantMap = new Map();
+      // Find other user from chatId efficiently
+      let otherUser = null;
       
-      // Add senders
-      messages.forEach(msg => {
-        if (msg.sender && msg.sender._id) {
-          participantMap.set(msg.sender._id.toString(), msg.sender);
-        }
-      });
-
-      // Also check for other participants in the chat by checking all messages
-      const allChatMessages = await Message.find({ 
-        chatId: chatId,
-        deleted: false 
-      }).populate('sender', 'name email avatar');
-
-      allChatMessages.forEach(msg => {
-        if (msg.sender && msg.sender._id) {
-          participantMap.set(msg.sender._id.toString(), msg.sender);
-        }
-      });
-
-      // Find other user (not current user)
-      const otherUserId = Array.from(participantMap.keys()).find(id => id !== userId.toString());
-      const otherUser = participantMap.get(otherUserId);
-
-      console.log('Chat', chatId, 'participants:', Array.from(participantMap.keys()));
-      console.log('Other user:', otherUser?.name || 'Unknown');
-
-      // If no other user found from messages, try to extract from chatId
-      let fallbackOtherUser = null;
-      if (!otherUser && chatId.includes('_')) {
+      if (chatId.includes('_')) {
         const chatIdParts = chatId.split('_');
-        console.log('getUserChats - ChatId parts:', chatIdParts);
+        const otherUserId = chatIdParts.find(part => 
+          part.length === 24 && part !== userId.toString()
+        );
         
-        // Try to find user IDs in the chatId
-        for (const part of chatIdParts) {
-          if (part.length === 24 && part !== userId.toString()) { // MongoDB ObjectId length
-            try {
-              fallbackOtherUser = await User.findById(part, 'name email avatar').lean();
-              if (fallbackOtherUser) {
-                console.log('getUserChats - Found fallback user:', fallbackOtherUser.name);
-                break;
-              }
-            } catch (err) {
-              console.log('getUserChats - Invalid user ID in chatId:', part);
-            }
+        if (otherUserId) {
+          try {
+            otherUser = await User.findById(otherUserId, 'name email avatar').lean();
+          } catch (err) {
+            console.log('Invalid user ID in chatId:', otherUserId);
           }
         }
       }
 
-      const finalOtherUser = otherUser || fallbackOtherUser;
-
       // Only add chat if we found an other user
-      if (finalOtherUser) {
+      if (otherUser) {
         chats.push({
           chatId,
-          lastMessage: {
-            _id: latestMessage._id,
-            content: latestMessage.content,
-            createdAt: latestMessage.createdAt,
-            sender: latestMessage.sender
-          },
-          otherUser: finalOtherUser,
+          lastMessage,
+          otherUser,
           unreadCount: 0
         });
       }
     }
 
-    // Sort by latest message time and remove any potential duplicates
-    const uniqueChats = chats.filter((chat, index, self) => 
-      index === self.findIndex(c => c.chatId === chat.chatId)
-    ).sort((a, b) => new Date(b.lastMessage.createdAt) - new Date(a.lastMessage.createdAt));
-
-    console.log('Returning unique chats:', uniqueChats.length);
+    console.log('Returning processed chats:', chats.length);
 
     res.status(200).json({
       success: true,
-      chats: uniqueChats
+      chats
     });
   } catch (error) {
     console.error('Error in getUserChats:', error);

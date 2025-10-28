@@ -16,11 +16,26 @@ const MyApplications = () => {
   const fetchApplications = async () => {
     try {
       // This would typically come from a dedicated applications endpoint
-      const chats = await chatService.getUserChats();
+      const response = await chatService.getUserChats();
+      console.log('Chats response:', response);
+      
+      // Handle the response structure properly
+      let chats = [];
+      if (response && response.success && Array.isArray(response.chats)) {
+        chats = response.chats;
+      } else if (Array.isArray(response)) {
+        chats = response;
+      } else {
+        console.error('Invalid chats response structure:', response);
+        setApplications([]);
+        return;
+      }
+      
       const applicationChats = chats.filter(chat => chat.lastMessage?.messageType === 'application');
       setApplications(applicationChats);
     } catch (error) {
       console.error('Failed to fetch applications:', error);
+      setApplications([]);
     } finally {
       setLoading(false);
     }
