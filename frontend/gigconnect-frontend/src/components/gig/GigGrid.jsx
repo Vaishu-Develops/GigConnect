@@ -2,7 +2,7 @@ import React from 'react';
 import GigCard from './GigCard';
 import { LoadingCard } from '../ui/Loader';
 
-const GigGrid = ({ gigs, loading, emptyMessage = "No gigs found" }) => {
+const GigGrid = ({ gigs, loading, emptyMessage = "No gigs found", showOwnerActions = false }) => {
   if (loading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -26,7 +26,7 @@ const GigGrid = ({ gigs, loading, emptyMessage = "No gigs found" }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {gigs.map((gig) => (
-        <GigCard key={gig._id} gig={gig} />
+        <GigCard key={gig._id} gig={gig} showOwnerActions={showOwnerActions} />
       ))}
     </div>
   );

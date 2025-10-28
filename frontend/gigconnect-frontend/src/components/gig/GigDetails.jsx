@@ -191,7 +191,7 @@ const GigDetails = () => {
               </div>
             ) : canApply ? (
               <div className="space-y-3">
-                <Button className="w-full" as={Link} to={`/freelancer/apply-to-job/${gig._id}`}>
+                <Button className="w-full" as={Link} to={`/freelancer/apply/${gig._id}`}>
                   Apply Now
                 </Button>
                 <Button variant="outline" className="w-full" onClick={handleSaveForLater}>

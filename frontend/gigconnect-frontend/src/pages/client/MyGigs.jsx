@@ -118,6 +118,7 @@ const MyGigs = () => {
         <GigGrid 
           gigs={filteredGigs}
           loading={loading}
+          showOwnerActions={true}
           emptyMessage={
             filter === 'all' 
               ? "You haven't posted any gigs yet"

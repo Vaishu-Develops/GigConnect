@@ -1,14 +1,28 @@
 // components/gig/GigCard.js
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
-const GigCard = ({ gig }) => {
+const GigCard = ({ gig, showOwnerActions = false }) => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  
   const formatBudget = (amount) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: 'INR',
       maximumFractionDigits: 0
     }).format(amount);
+  };
+
+  const isOwner = user && gig.client && user._id === gig.client._id;
+
+  const handleEditGig = () => {
+    navigate(`/client/edit-gig/${gig._id}`);
+  };
+
+  const handleViewApplicants = () => {
+    navigate(`/client/gig-applicants/${gig._id}`);
   };
 
   return (
@@ -60,7 +74,7 @@ const GigCard = ({ gig }) => {
 
       {/* Footer */}
       <div className="p-4">
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center mb-3">
           <div className="flex items-center">
             <img
               src={gig.client?.avatar || '/default-avatar.png'}
@@ -77,6 +91,24 @@ const GigCard = ({ gig }) => {
             View Details
           </Link>
         </div>
+
+        {/* Owner Action Buttons */}
+        {(showOwnerActions && isOwner) && (
+          <div className="flex space-x-2 pt-2 border-t border-gray-100">
+            <button
+              onClick={handleEditGig}
+              className="flex-1 bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition duration-200"
+            >
+              Edit Gig
+            </button>
+            <button
+              onClick={handleViewApplicants}
+              className="flex-1 bg-emerald-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-emerald-700 transition duration-200"
+            >
+              View Applicants
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
