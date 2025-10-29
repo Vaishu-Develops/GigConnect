@@ -9,6 +9,15 @@ const Earnings = () => {
   const { user } = useAuth();
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [withdrawalAmount, setWithdrawalAmount] = useState('');
+  const [bankDetails, setBankDetails] = useState({
+    accountNumber: '',
+    routingNumber: '',
+    accountHolderName: '',
+    bankName: ''
+  });
+  const [showBankForm, setShowBankForm] = useState(false);
+  const [withdrawalLoading, setWithdrawalLoading] = useState(false);
   const [stats, setStats] = useState({
     totalEarnings: 0,
     pendingBalance: 0,
@@ -27,16 +36,30 @@ const Earnings = () => {
       const paymentsData = await paymentService.getUserPayments();
       console.log('All payments received:', paymentsData.payments);
       setPayments(paymentsData.payments || []);
-      calculateStats(paymentsData.payments || []);
+      
+      // Also fetch withdrawals to calculate correct available balance
+      const withdrawalsData = await paymentService.getWithdrawals();
+      console.log('Withdrawals received:', withdrawalsData.data);
+      
+      calculateStats(paymentsData.payments || [], withdrawalsData.data || []);
     } catch (error) {
       console.error('Failed to fetch earnings:', error);
+      // If withdrawals fail, still calculate with empty withdrawals
+      try {
+        const paymentsData = await paymentService.getUserPayments();
+        setPayments(paymentsData.payments || []);
+        calculateStats(paymentsData.payments || [], []);
+      } catch (paymentError) {
+        console.error('Failed to fetch payments:', paymentError);
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  const calculateStats = (paymentsData) => {
+  const calculateStats = (paymentsData, withdrawalsData = []) => {
     console.log('Calculating stats for payments:', paymentsData);
+    console.log('Calculating stats for withdrawals:', withdrawalsData);
     console.log('Current user from context:', user);
     
     if (!user || !user._id) {
@@ -76,15 +99,87 @@ const Earnings = () => {
     const platformFeeRate = 0.05;
     const freelancerEarnings = totalEarnings * (1 - platformFeeRate);
     
+    // Calculate total withdrawn amount (pending, processing, completed withdrawals)
+    const totalWithdrawn = withdrawalsData
+      .filter(withdrawal => ['pending', 'processing', 'completed'].includes(withdrawal.status))
+      .reduce((sum, withdrawal) => sum + withdrawal.amount, 0);
+    
+    console.log('Total withdrawn amount:', totalWithdrawn);
+    
     const calculatedStats = {
       totalEarnings: freelancerEarnings,
       pendingBalance: pendingBalance * (1 - platformFeeRate),
-      availableBalance: freelancerEarnings, // In real app, this would subtract withdrawn amounts
+      availableBalance: freelancerEarnings - totalWithdrawn, // Subtract withdrawn amounts
       completedProjects: paidPayments.length
     };
     
     console.log('Calculated stats:', calculatedStats);
     setStats(calculatedStats);
+  };
+
+  const handleWithdrawClick = () => {
+    if (stats.availableBalance <= 0) {
+      alert('No funds available for withdrawal');
+      return;
+    }
+    setShowBankForm(true);
+  };
+
+  const handleBankDetailsChange = (e) => {
+    const { name, value } = e.target;
+    setBankDetails(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleWithdrawal = async () => {
+    if (!withdrawalAmount || withdrawalAmount <= 0) {
+      alert('Please enter a valid withdrawal amount');
+      return;
+    }
+
+    if (parseFloat(withdrawalAmount) > stats.availableBalance) {
+      alert(`Withdrawal amount cannot exceed available balance of ${formatCurrency(stats.availableBalance)}`);
+      return;
+    }
+
+    if (!bankDetails.accountNumber || !bankDetails.routingNumber || 
+        !bankDetails.accountHolderName || !bankDetails.bankName) {
+      alert('Please fill in all bank details');
+      return;
+    }
+
+    setWithdrawalLoading(true);
+    try {
+      const withdrawalData = {
+        amount: parseFloat(withdrawalAmount),
+        bankDetails
+      };
+
+      const response = await paymentService.createWithdrawal(withdrawalData);
+      
+      if (response.success) {
+        alert(`Withdrawal request submitted successfully! Transaction ID: ${response.data.transactionId}`);
+        setWithdrawalAmount('');
+        setBankDetails({
+          accountNumber: '',
+          routingNumber: '',
+          accountHolderName: '',
+          bankName: ''
+        });
+        setShowBankForm(false);
+        // Refresh earnings to reflect the withdrawal
+        fetchEarnings();
+      } else {
+        alert('Failed to submit withdrawal request');
+      }
+    } catch (error) {
+      console.error('Withdrawal error:', error);
+      alert(error.response?.data?.message || 'Failed to submit withdrawal request');
+    } finally {
+      setWithdrawalLoading(false);
+    }
   };
 
   const getStatusColor = (status) => {
@@ -144,27 +239,124 @@ const Earnings = () => {
         {/* Withdrawal Section */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Withdraw Funds</h3>
-          <div className="flex flex-col sm:flex-row sm:items-end space-y-4 sm:space-y-0 sm:space-x-4">
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Withdrawal Amount
-              </label>
-              <div className="flex space-x-2">
-                <input
-                  type="number"
-                  placeholder="Enter amount"
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                  max={stats.availableBalance}
-                />
-                <button className="bg-emerald-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-emerald-700 transition-colors">
-                  Withdraw
+          
+          {!showBankForm ? (
+            <div className="flex flex-col sm:flex-row sm:items-end space-y-4 sm:space-y-0 sm:space-x-4">
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Withdrawal Amount
+                </label>
+                <div className="flex space-x-2">
+                  <input
+                    type="number"
+                    placeholder="Enter amount"
+                    value={withdrawalAmount}
+                    onChange={(e) => setWithdrawalAmount(e.target.value)}
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    max={stats.availableBalance}
+                    min="1"
+                  />
+                  <button 
+                    onClick={handleWithdrawClick}
+                    disabled={!withdrawalAmount || parseFloat(withdrawalAmount) <= 0 || parseFloat(withdrawalAmount) > stats.availableBalance}
+                    className="bg-emerald-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-emerald-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  >
+                    Next
+                  </button>
+                </div>
+                <p className="text-sm text-gray-500 mt-2">
+                  Available: {formatCurrency(stats.availableBalance)}
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <p className="text-sm text-gray-600">Withdrawal Amount: <span className="font-semibold">{formatCurrency(parseFloat(withdrawalAmount))}</span></p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Account Holder Name
+                  </label>
+                  <input
+                    type="text"
+                    name="accountHolderName"
+                    value={bankDetails.accountHolderName}
+                    onChange={handleBankDetailsChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    placeholder="Full name as on account"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Bank Name
+                  </label>
+                  <input
+                    type="text"
+                    name="bankName"
+                    value={bankDetails.bankName}
+                    onChange={handleBankDetailsChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    placeholder="Bank name"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Account Number
+                  </label>
+                  <input
+                    type="text"
+                    name="accountNumber"
+                    value={bankDetails.accountNumber}
+                    onChange={handleBankDetailsChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    placeholder="Account number"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Routing Number
+                  </label>
+                  <input
+                    type="text"
+                    name="routingNumber"
+                    value={bankDetails.routingNumber}
+                    onChange={handleBankDetailsChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    placeholder="Routing number"
+                  />
+                </div>
+              </div>
+              
+              <div className="flex space-x-4">
+                <button
+                  onClick={() => setShowBankForm(false)}
+                  className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Back
+                </button>
+                <button
+                  onClick={handleWithdrawal}
+                  disabled={withdrawalLoading}
+                  className="bg-emerald-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-emerald-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center"
+                >
+                  {withdrawalLoading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Processing...
+                    </>
+                  ) : (
+                    'Submit Withdrawal'
+                  )}
                 </button>
               </div>
-              <p className="text-sm text-gray-500 mt-2">
-                Available: {formatCurrency(stats.availableBalance)}
-              </p>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Payment History */}

@@ -25,4 +25,25 @@ export const paymentService = {
     const response = await api.get('/payments/history');
     return response.data;
   },
+
+  // Withdrawal functions
+  async createWithdrawal(withdrawalData) {
+    const response = await api.post('/withdrawals', withdrawalData);
+    return response.data;
+  },
+
+  async getWithdrawals() {
+    const response = await api.get('/withdrawals');
+    return response.data;
+  },
+
+  async getWithdrawal(id) {
+    const response = await api.get(`/withdrawals/${id}`);
+    return response.data;
+  },
+
+  async cancelWithdrawal(id) {
+    const response = await api.patch(`/withdrawals/${id}/cancel`);
+    return response.data;
+  },
 };

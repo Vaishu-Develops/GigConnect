@@ -10,6 +10,7 @@ import paymentRoutes from './routes/paymentRoutes.js';
 import webhookRoutes from './routes/webhookRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import contractRoutes from './routes/contractRoutes.js';
+import withdrawalRoutes from './routes/withdrawalRoutes.js';
 
 const app = express();
 
@@ -37,6 +38,7 @@ app.use('/api/admin', adminRoutes); // Add this
 app.use('/api/payments', paymentRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/contracts', contractRoutes);
+app.use('/api/withdrawals', withdrawalRoutes);
 
 
 // Home route
