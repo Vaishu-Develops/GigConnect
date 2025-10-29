@@ -266,6 +266,14 @@ function App() {
             }
           />
           <Route
+            path="/client/payment-checkout"
+            element={
+              <ProtectedRoute requiredRole="client">
+                <PaymentCheckout />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/client/payment-success/:orderId"
             element={
               <ProtectedRoute requiredRole="client">

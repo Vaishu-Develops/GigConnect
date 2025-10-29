@@ -181,6 +181,14 @@ const MyApplications = () => {
                       >
                         View Messages
                       </Button>
+                      
+                      <Button
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => window.open(`/messages/${application.chatId}`, '_blank')}
+                      >
+                        Open Chat
+                      </Button>
                     </div>
                   </div>
                 </div>

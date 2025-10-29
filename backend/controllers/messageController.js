@@ -23,7 +23,18 @@ const sendMessage = async (req, res) => {
 
     // Remove sender from participants to get recipients
     participants.delete(senderId.toString());
-    const recipients = Array.from(participants);
+    let recipients = Array.from(participants);
+
+    // If no existing messages (new chat), try to extract participant from chatId
+    if (recipients.length === 0 && chatId.includes('_')) {
+      const chatIdParts = chatId.split('_');
+      const otherUserId = chatIdParts.find(part => 
+        part.length === 24 && part !== senderId.toString()
+      );
+      if (otherUserId) {
+        recipients = [otherUserId];
+      }
+    }
 
     console.log('Chat participants (recipients):', recipients);
 
@@ -396,19 +407,9 @@ const createChat = async (req, res) => {
       });
     }
 
-    // Create initial message with both users in readBy
-    const message = await Message.create({
-      chatId,
-      sender: userId,
-      content: gigId ? `Hi! I'm interested in your gig. Let's discuss the details.` : 'Hi! Let\'s discuss your project.',
-      messageType: 'system',
-      readBy: [
-        { userId: participantId, readAt: new Date() },
-        { userId: userId, readAt: new Date() }
-      ]
-    });
-
-    console.log('Created chat with message:', message);
+    // For new chats, don't create an initial system message
+    // Let the first real message create the chat context
+    console.log('Creating new chat:', chatId);
 
     res.status(201).json({
       success: true,

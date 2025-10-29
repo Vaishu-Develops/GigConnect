@@ -13,6 +13,8 @@ const ApplyToJob = () => {
   const [gig, setGig] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
   const [formData, setFormData] = useState({
     proposal: '',
     bidAmount: '',
@@ -48,21 +50,68 @@ const ApplyToJob = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
+    setError('');
+    setSuccess(false);
 
     try {
+      console.log('Starting application submission for gig:', gigId);
+      console.log('Form data:', formData);
+      console.log('Client ID:', gig.client._id);
+
+      // Validate form data
+      if (!formData.proposal.trim()) {
+        throw new Error('Please write a proposal');
+      }
+      if (!formData.bidAmount || formData.bidAmount <= 0) {
+        throw new Error('Please enter a valid bid amount');
+      }
+      if (!formData.timeline.trim()) {
+        throw new Error('Please specify a timeline');
+      }
+
       // Create a chat first
-      const chat = await chatService.createChat(gig.client._id, gigId);
+      console.log('Creating chat with client...');
+      const chatResponse = await chatService.createChat(gig.client._id, gigId);
+      console.log('Chat created:', chatResponse);
+
+      if (!chatResponse.success || !chatResponse.chat) {
+        throw new Error('Failed to create chat');
+      }
       
       // Send the application message
-      await chatService.sendMessage({
-        chatId: chat._id,
-        content: `Application for "${gig.title}":\n\nProposal: ${formData.proposal}\nBid: ₹${formData.bidAmount}\nTimeline: ${formData.timeline}`,
-        messageType: 'application'
-      });
+      console.log('Sending application message...');
+      const messageData = {
+        chatId: chatResponse.chat._id,
+        content: `🎯 New Job Application for "${gig.title}"
 
-      navigate('/freelancer/applications');
+📝 **Proposal:**
+${formData.proposal}
+
+💰 **Bid Amount:** ₹${formData.bidAmount}
+⏰ **Timeline:** ${formData.timeline}
+
+I'm interested in working on this project. Let's discuss further!`,
+        messageType: 'application'
+      };
+
+      console.log('Message data to send:', messageData);
+      const messageResponse = await chatService.sendMessage(messageData);
+      console.log('Message sent:', messageResponse);
+
+      if (!messageResponse.success) {
+        throw new Error('Failed to send application');
+      }
+
+      setSuccess(true);
+      
+      // Redirect after a shorter delay since we have manual buttons
+      setTimeout(() => {
+        navigate('/freelancer/applications', { replace: true });
+      }, 5000); // 5 seconds to give time to see success message
+      
     } catch (error) {
       console.error('Failed to submit application:', error);
+      setError(error.message || 'Failed to submit application. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -116,6 +165,52 @@ const ApplyToJob = () => {
           <div className="lg:col-span-2">
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Success Message */}
+                {success && (
+                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <span className="text-lg mr-2">✅</span>
+                        <div>
+                          <h4 className="font-semibold">Application Submitted!</h4>
+                          <p className="text-sm">Your application has been sent to the client.</p>
+                        </div>
+                      </div>
+                      <div className="flex space-x-2">
+                        <Button 
+                          as={Link} 
+                          to="/freelancer/applications"
+                          variant="secondary"
+                          size="sm"
+                        >
+                          View My Applications
+                        </Button>
+                        <Button 
+                          as={Link} 
+                          to="/freelancer/browse-jobs"
+                          variant="outline"
+                          size="sm"
+                        >
+                          Browse More Jobs
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Error Message */}
+                {error && (
+                  <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+                    <div className="flex items-center">
+                      <span className="text-lg mr-2">❌</span>
+                      <div>
+                        <h4 className="font-semibold">Submission Failed</h4>
+                        <p className="text-sm">{error}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Proposal */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -144,6 +239,7 @@ const ApplyToJob = () => {
                     value={formData.bidAmount}
                     onChange={handleChange}
                     min="1"
+                    placeholder="Enter your bid amount"
                     required
                   />
 

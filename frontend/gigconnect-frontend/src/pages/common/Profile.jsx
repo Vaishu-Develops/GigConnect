@@ -23,15 +23,34 @@ const Profile = () => {
 
   const fetchUserData = async () => {
     try {
-      const [userData, reviewsData] = await Promise.all([
-        userService.getUserById(currentUser._id),
-        reviewService.getUserReviews(currentUser._id)
-      ]);
+      console.log('Fetching user data for ID:', currentUser._id);
+      
+      // Fetch user data safely
+      let userData = null;
+      try {
+        userData = await userService.getUserById(currentUser._id);
+        console.log('User data received:', userData);
+      } catch (userError) {
+        console.error('Failed to fetch user data:', userError);
+        userData = currentUser; // Fallback to current user data
+      }
+
+      // Fetch reviews data safely
+      let reviewsData = [];
+      try {
+        reviewsData = await reviewService.getUserReviews(currentUser._id);
+        console.log('Reviews data received:', reviewsData);
+      } catch (reviewError) {
+        console.error('Failed to fetch reviews:', reviewError);
+        reviewsData = []; // Default to empty array
+      }
       
       setUser(userData);
-      setReviews(reviewsData);
+      setReviews(Array.isArray(reviewsData) ? reviewsData : []);
     } catch (error) {
       console.error('Failed to fetch user data:', error);
+      setUser(currentUser); // Fallback to current user
+      setReviews([]); // Ensure reviews is always an array
     } finally {
       setLoading(false);
     }
@@ -146,7 +165,7 @@ const Profile = () => {
                     </p>
                   </div>
                 ) : (
-                  reviews.map((review) => (
+                  (Array.isArray(reviews) ? reviews : []).map((review) => (
                     <ReviewCard key={review._id} review={review} />
                   ))
                 )}

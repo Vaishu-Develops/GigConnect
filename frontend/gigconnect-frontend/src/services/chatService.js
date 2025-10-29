@@ -25,8 +25,17 @@ export const chatService = {
   },
 
   async sendMessage(messageData) {
-    const response = await api.post('/messages', messageData);
-    return response.data;
+    try {
+      console.log('Sending message with data:', messageData);
+      const response = await api.post('/messages', messageData);
+      console.log('Send message response:', response);
+      return response.data;
+    } catch (error) {
+      console.error('Error in sendMessage:', error);
+      console.error('Error response:', error.response);
+      console.error('Error data:', error.response?.data);
+      throw error;
+    }
   },
 
   async markMessagesAsRead(messageIds, chatId) {
