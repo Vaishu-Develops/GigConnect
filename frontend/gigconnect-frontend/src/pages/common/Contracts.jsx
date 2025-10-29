@@ -21,6 +21,11 @@ const Contracts = () => {
       setMessage(location.state.message);
       // Clear message after 5 seconds
       setTimeout(() => setMessage(''), 5000);
+      
+      // If refreshData flag is set, refresh the contracts list
+      if (location.state?.refreshData) {
+        fetchContracts();
+      }
     }
   }, [location.state]);
 

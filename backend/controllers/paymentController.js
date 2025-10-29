@@ -1,6 +1,7 @@
 import getRazorpayInstance from '../config/razorpay.js';
 import Payment from '../models/Payment.js';
 import Gig from '../models/Gig.js';
+import Contract from '../models/Contract.js';
 import User from '../models/User.js';
 import crypto from 'crypto';
 
@@ -9,23 +10,62 @@ import crypto from 'crypto';
 // @access  Private
 const createOrder = async (req, res) => {
   try {
-    const { gigId, amount } = req.body;
+    const { gigId, contractId, amount, type = 'gig' } = req.body;
 
-    // Validate gig exists
-    const gig = await Gig.findById(gigId).populate('client', 'name email');
-    if (!gig) {
-      return res.status(404).json({ 
-        success: false,
-        message: 'Gig not found' 
-      });
-    }
+    let itemData, clientId, freelancerId, itemTitle;
 
-    // Check if user is the client of this gig
-    if (gig.client._id.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ 
-        success: false,
-        message: 'Not authorized to pay for this gig' 
-      });
+    if (type === 'contract') {
+      // Validate contract exists
+      const contract = await Contract.findById(contractId).populate('client freelancer', 'name email');
+      if (!contract) {
+        return res.status(404).json({ 
+          success: false,
+          message: 'Contract not found' 
+        });
+      }
+
+      // Check if user is the client of this contract
+      if (contract.client._id.toString() !== req.user._id.toString()) {
+        return res.status(403).json({ 
+          success: false,
+          message: 'Not authorized to pay for this contract' 
+        });
+      }
+
+      // Check if contract is completed
+      if (contract.status !== 'completed') {
+        return res.status(400).json({ 
+          success: false,
+          message: 'Contract must be completed before payment' 
+        });
+      }
+
+      itemData = contract;
+      clientId = contract.client._id;
+      freelancerId = contract.freelancer._id;
+      itemTitle = contract.title;
+    } else {
+      // Validate gig exists
+      const gig = await Gig.findById(gigId).populate('client', 'name email');
+      if (!gig) {
+        return res.status(404).json({ 
+          success: false,
+          message: 'Gig not found' 
+        });
+      }
+
+      // Check if user is the client of this gig
+      if (gig.client._id.toString() !== req.user._id.toString()) {
+        return res.status(403).json({ 
+          success: false,
+          message: 'Not authorized to pay for this gig' 
+        });
+      }
+
+      itemData = gig;
+      clientId = gig.client._id;
+      freelancerId = gig.freelancer._id;
+      itemTitle = gig.title;
     }
 
     // Create receipt ID
@@ -37,10 +77,11 @@ const createOrder = async (req, res) => {
       currency: 'INR',
       receipt: receipt,
       notes: {
-        gigId: gigId.toString(),
+        ...(type === 'contract' ? { contractId: contractId.toString() } : { gigId: gigId.toString() }),
         clientId: req.user._id.toString(),
-        freelancerId: gig.client._id.toString(),
-        gigTitle: gig.title,
+        freelancerId: freelancerId.toString(),
+        title: itemTitle,
+        paymentType: type,
       },
     };
 
@@ -49,19 +90,27 @@ const createOrder = async (req, res) => {
     const order = await razorpay.orders.create(options);
 
     // Save payment record in database
-    const payment = await Payment.create({
+    const paymentData = {
       orderId: order.id,
-      gigId: gigId,
       clientId: req.user._id,
-      freelancerId: gig.client._id,
+      freelancerId: freelancerId,
       amount: amount,
       receipt: receipt,
       status: 'created',
+      paymentType: type,
       notes: {
-        gigTitle: gig.title,
+        title: itemTitle,
         clientName: req.user.name,
       },
-    });
+    };
+
+    if (type === 'contract') {
+      paymentData.contractId = contractId;
+    } else {
+      paymentData.gigId = gigId;
+    }
+
+    const payment = await Payment.create(paymentData);
 
     res.status(201).json({
       success: true,
@@ -73,7 +122,8 @@ const createOrder = async (req, res) => {
       },
       payment: {
         id: payment._id,
-        gigTitle: gig.title,
+        title: itemTitle,
+        type: type,
       },
     });
   } catch (error) {
@@ -90,7 +140,13 @@ const createOrder = async (req, res) => {
 // @access  Private
 const verifyPayment = async (req, res) => {
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, contractId, type } = req.body;
+
+    console.log('=== PAYMENT VERIFICATION START ===');
+    console.log('Order ID:', razorpay_order_id);
+    console.log('Payment ID:', razorpay_payment_id);
+    console.log('Contract ID from request:', contractId);
+    console.log('Payment Type:', type);
 
     // Create expected signature
     const body = razorpay_order_id + "|" + razorpay_payment_id;
@@ -111,7 +167,13 @@ const verifyPayment = async (req, res) => {
           status: 'paid',
         },
         { new: true }
-      ).populate('gigId').populate('clientId').populate('freelancerId');
+      ).populate('gigId').populate('contractId').populate('clientId').populate('freelancerId');
+
+      console.log('Payment record found:', payment ? 'Yes' : 'No');
+      if (payment) {
+        console.log('Payment type from DB:', payment.paymentType);
+        console.log('Contract ID from DB:', payment.contractId);
+      }
 
       if (!payment) {
         return res.status(404).json({
@@ -120,10 +182,29 @@ const verifyPayment = async (req, res) => {
         });
       }
 
-      // Update gig status to in-progress
-      await Gig.findByIdAndUpdate(payment.gigId, {
-        status: 'in-progress',
-      });
+      // Update status based on payment type
+      if (payment.paymentType === 'contract') {
+        // Update contract payment status
+        console.log('Updating contract payment status for contract ID:', payment.contractId);
+        const updatedContract = await Contract.findByIdAndUpdate(payment.contractId, {
+          paymentStatus: 'paid',
+        }, { new: true });
+        console.log('Contract updated:', updatedContract ? 'Success' : 'Failed');
+        console.log('New payment status:', updatedContract?.paymentStatus);
+        
+        if (!updatedContract) {
+          console.error('ERROR: Contract not found for ID:', payment.contractId);
+        }
+      } else {
+        // Update gig status to in-progress
+        await Gig.findByIdAndUpdate(payment.gigId, {
+          status: 'in-progress',
+        });
+      }
+
+      const itemTitle = payment.paymentType === 'contract' 
+        ? payment.contractId?.title 
+        : payment.gigId?.title;
 
       res.json({
         success: true,
@@ -132,7 +213,8 @@ const verifyPayment = async (req, res) => {
           id: payment._id,
           amount: payment.amount,
           status: payment.status,
-          gigTitle: payment.gigId.title,
+          title: itemTitle,
+          type: payment.paymentType,
         },
       });
     } else {
@@ -267,6 +349,7 @@ const getUserPayments = async (req, res) => {
       ],
     })
       .populate('gigId', 'title')
+      .populate('contractId', 'title')
       .populate('clientId', 'name')
       .populate('freelancerId', 'name')
       .sort({ createdAt: -1 });

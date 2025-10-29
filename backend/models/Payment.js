@@ -14,8 +14,23 @@ const paymentSchema = mongoose.Schema(
     },
     gigId: {
       type: mongoose.Schema.Types.ObjectId,
-      required: true,
       ref: 'Gig',
+      required: function() {
+        return this.paymentType === 'gig';
+      }
+    },
+    contractId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Contract',
+      required: function() {
+        return this.paymentType === 'contract';
+      }
+    },
+    paymentType: {
+      type: String,
+      enum: ['gig', 'contract'],
+      required: true,
+      default: 'gig'
     },
     clientId: {
       type: mongoose.Schema.Types.ObjectId,

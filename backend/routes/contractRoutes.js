@@ -5,7 +5,9 @@ import {
   getContract,
   acceptContract,
   declineContract,
-  updateContractStatus
+  updateContractStatus,
+  updateContract,
+  updatePaymentStatus
 } from '../controllers/contractController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
@@ -20,11 +22,13 @@ router.route('/')
   .get(getContracts);      // Get user's contracts
 
 router.route('/:id')
-  .get(getContract);       // Get single contract
+  .get(getContract)        // Get single contract
+  .put(updateContract);    // Update contract
 
 // Contract actions
 router.put('/:id/accept', acceptContract);       // Accept contract (freelancers only)
 router.put('/:id/decline', declineContract);     // Decline contract (freelancers only)
 router.put('/:id/status', updateContractStatus); // Update contract status
+router.put('/:id/payment-status', updatePaymentStatus); // Update payment status (for testing)
 
 export default router;

@@ -1,8 +1,10 @@
 import React from 'react';
 
-const OrderSummary = ({ gig, showFee = true }) => {
-  const platformFee = gig.budget * 0.05;
-  const totalAmount = gig.budget + platformFee;
+const OrderSummary = ({ gig, data, showFee = true }) => {
+  // Support both old gig prop and new data prop for backward compatibility
+  const item = data || gig;
+  const platformFee = item.budget * 0.05;
+  const totalAmount = item.budget + platformFee;
 
   const formatAmount = (amount) => {
     return new Intl.NumberFormat('en-IN', {
@@ -17,8 +19,8 @@ const OrderSummary = ({ gig, showFee = true }) => {
       
       <div className="space-y-3">
         <div className="flex justify-between text-sm">
-          <span className="text-gray-600">Gig Amount:</span>
-          <span className="font-medium">{formatAmount(gig.budget)}</span>
+          <span className="text-gray-600">{data ? 'Project Amount:' : 'Gig Amount:'}</span>
+          <span className="font-medium">{formatAmount(item.budget)}</span>
         </div>
         
         {showFee && (
@@ -32,7 +34,7 @@ const OrderSummary = ({ gig, showFee = true }) => {
           <div className="flex justify-between">
             <span className="font-semibold text-gray-900">Total:</span>
             <span className="font-bold text-emerald-600">
-              {formatAmount(showFee ? totalAmount : gig.budget)}
+              {formatAmount(showFee ? totalAmount : item.budget)}
             </span>
           </div>
         </div>

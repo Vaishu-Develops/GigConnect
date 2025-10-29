@@ -70,5 +70,27 @@ export const contractService = {
       console.error('Failed to update contract status:', error);
       throw error.response?.data || error;
     }
+  },
+
+  // Update contract (general update method)
+  updateContract: async (contractId, updateData) => {
+    try {
+      const response = await api.put(`/contracts/${contractId}`, updateData);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to update contract:', error);
+      throw error.response?.data || error;
+    }
+  },
+
+  // Update payment status (for testing)
+  updatePaymentStatus: async (contractId, status) => {
+    try {
+      const response = await api.put(`/contracts/${contractId}/payment-status`, { status });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to update payment status:', error);
+      throw error.response?.data || error;
+    }
   }
 };

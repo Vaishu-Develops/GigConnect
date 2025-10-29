@@ -113,9 +113,17 @@ const getContracts = async (req, res) => {
       .populate('freelancer', 'name email avatar skills hourlyRate')
       .sort({ createdAt: -1 });
 
+    // Ensure paymentStatus is set for existing contracts
+    const updatedContracts = contracts.map(contract => {
+      if (!contract.paymentStatus) {
+        contract.paymentStatus = 'unpaid';
+      }
+      return contract;
+    });
+
     res.json({
       success: true,
-      contracts
+      contracts: updatedContracts
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -133,6 +141,12 @@ const getContract = async (req, res) => {
 
     if (!contract) {
       return res.status(404).json({ message: 'Contract not found' });
+    }
+
+    // Ensure paymentStatus is set for existing contracts
+    if (!contract.paymentStatus) {
+      contract.paymentStatus = 'unpaid';
+      await contract.save();
     }
 
     // Check if user is part of this contract
@@ -316,11 +330,94 @@ const updateContractStatus = async (req, res) => {
   }
 };
 
+// @desc    Update contract
+// @route   PUT /api/contracts/:id
+// @access  Private (Client or Freelancer)
+const updateContract = async (req, res) => {
+  try {
+    const contract = await Contract.findById(req.params.id);
+
+    if (!contract) {
+      return res.status(404).json({ message: 'Contract not found' });
+    }
+
+    // Check if user is authorized to update this contract
+    if (contract.client.toString() !== req.user._id.toString() && 
+        contract.freelancer.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Not authorized to update this contract' });
+    }
+
+    // Update the contract
+    const updatedContract = await Contract.findByIdAndUpdate(
+      req.params.id,
+      { ...req.body },
+      { new: true, runValidators: true }
+    ).populate('client', 'name email avatar')
+     .populate('freelancer', 'name email avatar');
+
+    console.log('Contract updated successfully:', updatedContract._id);
+    console.log('New payment status:', updatedContract.paymentStatus);
+
+    res.json({
+      success: true,
+      contract: updatedContract
+    });
+  } catch (error) {
+    console.error('Update contract error:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Manually set payment status (for testing)
+// @route   PUT /api/contracts/:id/payment-status
+// @access  Private (Client only)
+const updatePaymentStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    
+    if (!['unpaid', 'pending', 'paid', 'refunded'].includes(status)) {
+      return res.status(400).json({ message: 'Invalid payment status' });
+    }
+
+    const contract = await Contract.findById(req.params.id);
+
+    if (!contract) {
+      return res.status(404).json({ message: 'Contract not found' });
+    }
+
+    // Check if user is the client
+    if (contract.client.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Only client can update payment status' });
+    }
+
+    // Update payment status
+    contract.paymentStatus = status;
+    await contract.save();
+
+    const updatedContract = await Contract.findById(req.params.id)
+      .populate('client', 'name email avatar')
+      .populate('freelancer', 'name email avatar');
+
+    console.log('Payment status updated to:', status);
+
+    res.json({
+      success: true,
+      message: `Payment status updated to ${status}`,
+      contract: updatedContract
+    });
+  } catch (error) {
+    console.error('Update payment status error:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export {
   createContract,
   getContracts,
   getContract,
   acceptContract,
   declineContract,
-  updateContractStatus
+  updateContractStatus,
+  updateContract,
+  updatePaymentStatus
 };

@@ -20,11 +20,45 @@ const ContractDetails = () => {
     }
   }, [contractId]);
 
+  // Refresh contract data when returning to page (e.g., after payment)
+  useEffect(() => {
+    const handlePaymentSuccess = (event) => {
+      if (event.detail?.contractId === contractId) {
+        // Payment was successful for this contract, refresh the data
+        console.log('Payment success detected, refreshing contract data...');
+        fetchContract();
+      }
+    };
+
+    const handleFocus = () => {
+      // Check if this contract was just paid
+      const paidContractId = localStorage.getItem('contractPaymentSuccess');
+      if (paidContractId === contractId) {
+        console.log('Contract payment detected in localStorage, refreshing...');
+        localStorage.removeItem('contractPaymentSuccess');
+        fetchContract();
+      }
+    };
+
+    // Listen for custom payment success event
+    window.addEventListener('contractPaymentSuccess', handlePaymentSuccess);
+    
+    // Listen for window focus (when returning from payment)
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      window.removeEventListener('contractPaymentSuccess', handlePaymentSuccess);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [contractId]);
+
   const fetchContract = async () => {
     try {
       setLoading(true);
       const response = await contractService.getContract(contractId);
       if (response.success) {
+        console.log('Contract data received:', response.contract);
+        console.log('Payment status:', response.contract.paymentStatus);
         setContract(response.contract);
       }
     } catch (error) {
@@ -75,6 +109,30 @@ const ContractDetails = () => {
     } catch (error) {
       console.error('Failed to update status:', error);
       alert(error.message || 'Failed to update status');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleSendPayment = async () => {
+    try {
+      setActionLoading(true);
+      
+      // Check if payment already exists
+      if (contract.paymentStatus === 'paid') {
+        alert('Payment has already been sent for this contract.');
+        return;
+      }
+
+      // Navigate to payment checkout with contract details
+      navigate('/client/payment-checkout', {
+        state: {
+          contract: contract
+        }
+      });
+    } catch (error) {
+      console.error('Failed to initiate payment:', error);
+      alert('Failed to initiate payment. Please try again.');
     } finally {
       setActionLoading(false);
     }
@@ -219,6 +277,23 @@ const ContractDetails = () => {
                   </div>
                 )}
                 
+                {contract.status === 'completed' && (
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">Payment Status</h3>
+                    <p className={`text-sm font-medium ${
+                      contract.paymentStatus === 'paid' 
+                        ? 'text-green-600' 
+                        : contract.paymentStatus === 'pending'
+                        ? 'text-yellow-600'
+                        : 'text-red-600'
+                    }`}>
+                      {contract.paymentStatus === 'paid' && '✅ Payment Completed'}
+                      {contract.paymentStatus === 'pending' && '⏳ Payment Pending'}
+                      {(!contract.paymentStatus || contract.paymentStatus === 'unpaid') && '❌ Payment Pending'}
+                    </p>
+                  </div>
+                )}
+                
                 {contract.startDate && (
                   <div>
                     <h3 className="text-sm font-medium text-gray-500 mb-1">Start Date</h3>
@@ -360,6 +435,27 @@ const ContractDetails = () => {
                     ✅ Mark as Completed
                   </Button>
                 )}
+
+                {/* Payment button for completed contracts */}
+                {contract.status === 'completed' && isClient && (
+                  <Button
+                    onClick={handleSendPayment}
+                    disabled={actionLoading || contract.paymentStatus === 'paid'}
+                    className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
+                  >
+                    {contract.paymentStatus === 'paid' ? '✅ Payment Sent' : '💳 Send Payment'}
+                  </Button>
+                )}
+
+                {/* Refresh button for debugging */}
+                <Button
+                  variant="secondary"
+                  onClick={fetchContract}
+                  disabled={loading}
+                  className="w-full border-gray-300 text-gray-600 hover:bg-gray-50"
+                >
+                  🔄 Refresh Contract Data
+                </Button>
 
                 {/* Cancel option */}
                 {['pending-acceptance', 'accepted', 'in-progress'].includes(contract.status) && (

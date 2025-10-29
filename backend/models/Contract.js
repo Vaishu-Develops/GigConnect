@@ -79,6 +79,11 @@ const contractSchema = mongoose.Schema(
       type: Date,
     },
     // Payment related fields
+    paymentStatus: {
+      type: String,
+      enum: ['unpaid', 'pending', 'paid', 'refunded'],
+      default: 'unpaid',
+    },
     totalPaid: {
       type: Number,
       default: 0,
