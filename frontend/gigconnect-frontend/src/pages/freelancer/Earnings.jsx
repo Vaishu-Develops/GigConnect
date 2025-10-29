@@ -3,8 +3,10 @@ import { paymentService } from '../../services/paymentService';
 import { formatCurrency } from '../../utils/helpers';
 import Badge from '../../components/ui/Badge';
 import { LoadingSpinner } from '../../components/ui/Loader';
+import { useAuth } from '../../context/AuthContext';
 
 const Earnings = () => {
+  const { user } = useAuth();
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -15,12 +17,15 @@ const Earnings = () => {
   });
 
   useEffect(() => {
-    fetchEarnings();
-  }, []);
+    if (user) {
+      fetchEarnings();
+    }
+  }, [user]);
 
   const fetchEarnings = async () => {
     try {
       const paymentsData = await paymentService.getUserPayments();
+      console.log('All payments received:', paymentsData.payments);
       setPayments(paymentsData.payments || []);
       calculateStats(paymentsData.payments || []);
     } catch (error) {
@@ -31,24 +36,62 @@ const Earnings = () => {
   };
 
   const calculateStats = (paymentsData) => {
-    const completedPayments = paymentsData.filter(p => p.status === 'completed');
-    const pendingPayments = paymentsData.filter(p => p.status === 'pending');
+    console.log('Calculating stats for payments:', paymentsData);
+    console.log('Current user from context:', user);
     
-    const totalEarnings = completedPayments.reduce((sum, payment) => sum + payment.amount, 0);
+    if (!user || !user._id) {
+      console.error('No current user found!');
+      setStats({
+        totalEarnings: 0,
+        pendingBalance: 0,
+        availableBalance: 0,
+        completedProjects: 0
+      });
+      return;
+    }
+    
+    // Filter payments where current user is the freelancer (receiving money)
+    const myPayments = paymentsData.filter(p => {
+      const freelancerId = p.freelancerId?._id || p.freelancerId;
+      const isFreelancer = freelancerId === user._id;
+      console.log(`Payment ${p._id}: freelancerId=${freelancerId}, currentUserId=${user._id}, isFreelancer=${isFreelancer}`);
+      return isFreelancer;
+    });
+    
+    console.log('Filtered freelancer payments:', myPayments);
+    
+    const paidPayments = myPayments.filter(p => p.status === 'paid');
+    const pendingPayments = myPayments.filter(p => ['created', 'attempted'].includes(p.status));
+    
+    console.log('Paid payments:', paidPayments);
+    console.log('Pending payments:', pendingPayments);
+    
+    const totalEarnings = paidPayments.reduce((sum, payment) => sum + payment.amount, 0);
     const pendingBalance = pendingPayments.reduce((sum, payment) => sum + payment.amount, 0);
     
-    setStats({
-      totalEarnings,
-      pendingBalance,
-      availableBalance: totalEarnings, // In real app, this would subtract platform fees, etc.
-      completedProjects: completedPayments.length
-    });
+    console.log('Total earnings before fee:', totalEarnings);
+    console.log('Pending balance before fee:', pendingBalance);
+    
+    // Platform takes 5% fee, so freelancer gets 95%
+    const platformFeeRate = 0.05;
+    const freelancerEarnings = totalEarnings * (1 - platformFeeRate);
+    
+    const calculatedStats = {
+      totalEarnings: freelancerEarnings,
+      pendingBalance: pendingBalance * (1 - platformFeeRate),
+      availableBalance: freelancerEarnings, // In real app, this would subtract withdrawn amounts
+      completedProjects: paidPayments.length
+    };
+    
+    console.log('Calculated stats:', calculatedStats);
+    setStats(calculatedStats);
   };
 
   const getStatusColor = (status) => {
     const colors = {
-      'completed': 'success',
-      'pending': 'accent',
+      'paid': 'success',
+      'created': 'accent',
+      'attempted': 'accent', 
       'failed': 'error',
       'refunded': 'gray'
     };
