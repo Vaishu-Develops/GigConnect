@@ -96,6 +96,14 @@ const ClientDashboard = () => {
             <div className="text-2xl mb-2">🚀</div>
             <div className="font-medium">Active Projects</div>
           </Link>
+
+          <Link
+            to="/workspaces"
+            className="bg-gradient-to-r from-indigo-500 to-indigo-600 text-white p-4 rounded-lg text-center hover:shadow-lg transition-all duration-300"
+          >
+            <div className="text-2xl mb-2">🏢</div>
+            <div className="font-medium">Workspaces</div>
+          </Link>
         </div>
       </div>
     </div>
@@ -166,6 +174,14 @@ const FreelancerDashboard = () => {
           >
             <div className="text-2xl mb-2">💰</div>
             <div className="font-medium">Earnings</div>
+          </Link>
+
+          <Link
+            to="/workspaces"
+            className="bg-gradient-to-r from-indigo-500 to-indigo-600 text-white p-4 rounded-lg text-center hover:shadow-lg transition-all duration-300"
+          >
+            <div className="text-2xl mb-2">🏢</div>
+            <div className="font-medium">Workspaces</div>
           </Link>
         </div>
       </div>
