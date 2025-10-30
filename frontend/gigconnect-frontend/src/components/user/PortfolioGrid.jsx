@@ -2,6 +2,18 @@ import React, { useState } from 'react';
 import Modal from '../ui/Modal';
 
 const PortfolioGrid = ({ items = [], isOwnProfile = false, onAddItem, onDeleteItem }) => {
+  console.log('PortfolioGrid received items:', items);
+  
+  // Filter out any undefined, null, or invalid items
+  const validItems = items.filter(item => 
+    item && 
+    typeof item === 'object' && 
+    item._id && 
+    item.title
+  );
+
+  console.log('Valid portfolio items:', validItems);
+
   const [selectedItem, setSelectedItem] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
@@ -15,7 +27,7 @@ const PortfolioGrid = ({ items = [], isOwnProfile = false, onAddItem, onDeleteIt
     setSelectedItem(null);
   };
 
-  if (items.length === 0) {
+  if (validItems.length === 0) {
     return (
       <div className="text-center py-12">
         <div className="text-6xl mb-4">🎨</div>
@@ -42,58 +54,87 @@ const PortfolioGrid = ({ items = [], isOwnProfile = false, onAddItem, onDeleteIt
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {items.map((item, index) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+        {validItems.map((item, index) => (
           <div
             key={item._id || index}
-            className="card hover:shadow-lg transition-all duration-300 cursor-pointer group"
+            className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300 cursor-pointer group overflow-hidden m-2"
             onClick={() => openItem(item)}
           >
-            <div className="aspect-video bg-gray-200 rounded-t-xl overflow-hidden">
-              {item.imageUrl ? (
+            {/* Image Section */}
+            <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden relative">
+              {item?.imageUrl ? (
                 <img
                   src={item.imageUrl}
-                  alt={item.title}
+                  alt={item?.title || 'Portfolio item'}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  onError={(e) => {
+                    e.target.src = '/images/default-project.jpg';
+                    e.target.onerror = null;
+                  }}
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-gray-400">
-                  🖼️
+                  <div className="text-center">
+                    <div className="text-4xl mb-2">🖼️</div>
+                    <p className="text-sm">No Image</p>
+                  </div>
                 </div>
               )}
+              
+              {/* Category Badge */}
+              <div className="absolute top-3 left-3">
+                <span className="px-3 py-1 bg-emerald-500 text-white text-xs font-medium rounded-full shadow-sm">
+                  {item?.category || 'Other'}
+                </span>
+              </div>
             </div>
             
-            <div className="p-4">
-              <h3 className="font-semibold text-gray-900 mb-2 line-clamp-1">
-                {item.title}
+            {/* Content Section */}
+            <div className="p-6">
+              <h3 className="font-bold text-lg text-gray-900 mb-2 line-clamp-1 group-hover:text-emerald-600 transition-colors">
+                {item?.title || 'Untitled Project'}
               </h3>
-              <p className="text-gray-600 text-sm line-clamp-2 mb-3">
-                {item.description}
+              <p className="text-gray-600 text-sm line-clamp-3 mb-4 leading-relaxed">
+                {item?.description || 'No description available'}
               </p>
               
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-500">
-                  {item.category}
+              {/* Project URL */}
+              {item?.projectUrl && (
+                <div className="mb-4">
+                  <a
+                    href={item.projectUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="inline-flex items-center text-emerald-600 hover:text-emerald-700 text-sm font-medium"
+                  >
+                    🔗 View Project
+                  </a>
+                </div>
+              )}
+              
+              {/* Footer */}
+              <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                <span className="text-xs text-gray-500 flex items-center">
+                  📅 {item?.createdAt ? new Date(item.createdAt).toLocaleDateString() : 'Unknown date'}
                 </span>
-                <span className="text-xs text-gray-500">
-                  {new Date(item.createdAt).toLocaleDateString()}
-                </span>
+                
+                {isOwnProfile && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (window.confirm('Are you sure you want to delete this portfolio item?')) {
+                        onDeleteItem(item?._id);
+                      }
+                    }}
+                    className="text-red-500 hover:text-red-700 text-sm font-medium px-2 py-1 rounded hover:bg-red-50 transition-colors"
+                  >
+                    Delete
+                  </button>
+                )}
               </div>
             </div>
-
-            {isOwnProfile && (
-              <div className="px-4 py-3 bg-gray-50 border-t border-gray-200">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDeleteItem(item._id);
-                  }}
-                  className="text-red-600 hover:text-red-800 text-sm font-medium"
-                >
-                  Delete
-                </button>
-              </div>
-            )}
           </div>
         ))}
       </div>

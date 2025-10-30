@@ -41,7 +41,7 @@ const Profile = () => {
       let portfolioData = [];
       try {
         const portfolioResponse = await portfolioService.getMyPortfolio();
-        portfolioData = portfolioResponse.portfolioItems || portfolioResponse.portfolio || [];
+        portfolioData = portfolioResponse.portfolio || [];
         console.log('Portfolio data received:', portfolioData);
       } catch (portfolioError) {
         console.error('Failed to fetch portfolio:', portfolioError);
@@ -210,6 +210,13 @@ const Profile = () => {
                   <>
                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 text-center">
                       <div className="text-3xl font-bold text-blue-600 mb-2">
+                        {portfolio.length}
+                      </div>
+                      <div className="text-gray-600">Portfolio Items</div>
+                    </div>
+
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 text-center">
+                      <div className="text-3xl font-bold text-red-600 mb-2">
                         {user.onTimeRate || 0}%
                       </div>
                       <div className="text-gray-600">On-time Delivery</div>
@@ -220,13 +227,6 @@ const Profile = () => {
                         ₹{user.totalEarnings || 0}
                       </div>
                       <div className="text-gray-600">Total Earnings</div>
-                    </div>
-
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 text-center">
-                      <div className="text-3xl font-bold text-cyan-600 mb-2">
-                        {user.repeatClients || 0}
-                      </div>
-                      <div className="text-gray-600">Repeat Clients</div>
                     </div>
                   </>
                 )}

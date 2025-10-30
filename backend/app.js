@@ -11,6 +11,10 @@ import webhookRoutes from './routes/webhookRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import contractRoutes from './routes/contractRoutes.js';
 import withdrawalRoutes from './routes/withdrawalRoutes.js';
+import workspaceRoutes from './routes/workspaceRoutes.js';
+import projectRoutes from './routes/projectRoutes.js';
+import discussionRoutes from './routes/discussionRoutes.js';
+import analyticsRoutes from './routes/analyticsRoutes.js';
 
 const app = express();
 
@@ -29,7 +33,7 @@ app.use(cors({
 app.use(express.json());
 
 // Routes
-app.use('/api/users', userRoutes);    
+app.use('/api/users', userRoutes);
 app.use('/api/gigs', gigRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/reviews', reviewRoutes);
@@ -39,8 +43,10 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/contracts', contractRoutes);
 app.use('/api/withdrawals', withdrawalRoutes);
-
-
+app.use('/api/workspaces', workspaceRoutes);
+app.use('/api/projects', projectRoutes);
+app.use('/api/discussions', discussionRoutes);
+app.use('/api/analytics', analyticsRoutes);
 // Home route
 app.get('/', (req, res) => {
   res.json({ message: 'GigConnect API is running!' });

@@ -17,11 +17,20 @@ const UserCard = ({ user, showActions = true }) => {
       <div className="p-6">
         {/* Header */}
         <div className="flex items-start space-x-4 mb-4">
-          <img
-            src={user.avatar || '/default-avatar.png'}
-            alt={user.name}
-            className="w-16 h-16 rounded-full border-2 border-emerald-200 group-hover:border-emerald-400 transition-colors"
-          />
+          <div className="relative">
+            <img
+              src={user?.avatar || user?.profilePicture || '/images/default-avatar.png'}
+              alt={user?.name || 'User profile'}
+              className="w-16 h-16 rounded-full border-2 border-emerald-200 group-hover:border-emerald-400 transition-colors object-cover bg-gray-100"
+              onError={(e) => {
+                e.target.src = '/images/default-avatar.png';
+                e.target.onerror = null;
+              }}
+            />
+            {user?.isOnline && (
+              <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
+            )}
+          </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between mb-2">
               <div>

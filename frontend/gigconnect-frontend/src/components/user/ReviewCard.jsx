@@ -8,12 +8,16 @@ const ReviewCard = ({ review }) => {
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center space-x-3">
           <img
-            src={review.clientId?.avatar || '/default-avatar.png'}
-            alt={review.clientId?.name}
-            className="w-10 h-10 rounded-full"
+            src={review.clientId?.avatar || '/images/default-avatar.png'}
+            alt={review.clientId?.name || 'Unknown User'}
+            className="w-10 h-10 rounded-full object-cover"
+            onError={(e) => {
+              e.target.src = '/images/default-avatar.png';
+              e.target.onerror = null;
+            }}
           />
           <div>
-            <h4 className="font-semibold text-gray-900">{review.clientId?.name}</h4>
+            <h4 className="font-semibold text-gray-900">{review.clientId?.name || 'Anonymous'}</h4>
             <p className="text-sm text-gray-600">
               {new Date(review.createdAt).toLocaleDateString('en-US', {
                 year: 'numeric',

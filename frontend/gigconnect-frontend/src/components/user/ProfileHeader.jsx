@@ -87,16 +87,25 @@ const ProfileHeader = ({ user, isOwnProfile = false }) => {
       <div className="px-6 pb-6">
         <div className="flex flex-col md:flex-row md:items-end md:justify-between -mt-16 mb-6">
           <div className="flex flex-col md:flex-row md:items-end space-y-4 md:space-y-0 md:space-x-6">
-            <img
-              src={user.avatar || '/default-avatar.png'}
-              alt={user.name}
-              className="w-32 h-32 rounded-full border-4 border-white shadow-lg"
-            />
+            <div className="relative">
+              <img
+                src={user?.avatar || user?.profilePicture || '/images/default-avatar.png'}
+                alt={user?.name || 'User profile'}
+                className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover bg-gray-100"
+                onError={(e) => {
+                  e.target.src = '/images/default-avatar.png';
+                  e.target.onerror = null;
+                }}
+              />
+              {user?.isOnline && (
+                <div className="absolute bottom-2 right-2 w-6 h-6 bg-green-500 border-2 border-white rounded-full"></div>
+              )}
+            </div>
             
             <div className="space-y-2">
               <div className="flex items-center space-x-3">
-                <h1 className="text-2xl font-bold text-gray-900">{user.name}</h1>
-                {user.isOnline && (
+                <h1 className="text-2xl font-bold text-gray-900">{user?.name || 'Unknown User'}</h1>
+                {user?.isOnline && (
                   <Badge variant="success" size="sm">
                     Online
                   </Badge>

@@ -65,6 +65,12 @@ import ManageGigs from './pages/admin/ManageGigs'
 import PlatformAnalytics from './pages/admin/PlatformAnalytics'
 import ReportedContent from './pages/admin/ReportedContent'
 
+// Workspace Pages
+import WorkspaceList from './pages/common/WorkspaceList'
+import CreateWorkspace from './pages/common/CreateWorkspace'
+import WorkspaceDashboard from './pages/common/WorkspaceDashboard'
+import InvitationTester from './pages/common/InvitationTester'
+
 function App() {
   const { user, loading } = useAuth()
 
@@ -188,6 +194,40 @@ function App() {
             element={
               <ProtectedRoute>
                 <ContractDetails />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Workspace Routes */}
+          <Route
+            path="/workspaces"
+            element={
+              <ProtectedRoute>
+                <WorkspaceList />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/workspaces/create"
+            element={
+              <ProtectedRoute>
+                <CreateWorkspace />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/workspaces/:workspaceId"
+            element={
+              <ProtectedRoute>
+                <WorkspaceDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/test/invitations"
+            element={
+              <ProtectedRoute>
+                <InvitationTester />
               </ProtectedRoute>
             }
           />

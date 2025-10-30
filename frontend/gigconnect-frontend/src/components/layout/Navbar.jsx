@@ -55,6 +55,9 @@ const Navbar = () => {
                 <Link to="/messages" className="text-gray-700 hover:text-emerald-600 font-medium">
                   Messages
                 </Link>
+                <Link to="/workspaces" className="text-gray-700 hover:text-emerald-600 font-medium">
+                  Workspaces
+                </Link>
                 <Link to="/dashboard" className="text-gray-700 hover:text-emerald-600 font-medium">
                   Dashboard
                 </Link>
@@ -83,7 +86,7 @@ const Navbar = () => {
                 </Link>
                 <div className="relative group">
                   <img
-                    src={user.avatar || '/default-avatar.png'}
+                    src={user.avatar || '/images/default-avatar.png'}
                     alt="Profile"
                     className="w-8 h-8 rounded-full cursor-pointer"
                   />
@@ -93,6 +96,9 @@ const Navbar = () => {
                     </Link>
                     <Link to="/dashboard" className="block px-4 py-2 text-gray-800 hover:bg-emerald-50">
                       Dashboard
+                    </Link>
+                    <Link to="/workspaces" className="block px-4 py-2 text-gray-800 hover:bg-emerald-50">
+                      Workspaces
                     </Link>
                     
                     {/* Role-specific links */}
