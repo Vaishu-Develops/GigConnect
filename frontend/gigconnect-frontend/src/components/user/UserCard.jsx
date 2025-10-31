@@ -33,9 +33,9 @@ const UserCard = ({ user, showActions = true }) => {
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between mb-2">
-              <div>
-                <h3 className="font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors truncate">
+            <div className="flex items-center justify-between">
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-gray-900 group-hover:text-emerald-600 transition-colors truncate">
                   {user.name}
                 </h3>
                 <p className="text-sm text-gray-600 capitalize">{user.role}</p>
@@ -47,11 +47,42 @@ const UserCard = ({ user, showActions = true }) => {
               )}
             </div>
             
-            <div className="flex items-center space-x-2">
-              <Rating rating={user.avgRating || 0} size="sm" readonly showLabel />
-              <span className="text-sm text-gray-500">
-                ({user.reviewCount || 0} reviews)
+            {/* Rating and Reviews - Fixed responsive layout */}
+            <div className="flex items-center justify-between mt-2">
+              <div className="flex items-center space-x-2">
+                <Rating rating={user.avgRating || user.averageRating || 0} size="sm" readonly />
+                <span className="text-xs text-gray-500">
+                  {(user.avgRating || user.averageRating || 0).toFixed(1)}
+                </span>
+              </div>
+              <span className="text-xs text-gray-500 whitespace-nowrap">
+                {user.reviewCount || user.totalReviews || 0} reviews
               </span>
+            </div>
+
+            {/* Stats Row */}
+            <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
+              <div className="text-center">
+                <div className="text-sm font-semibold text-emerald-600">
+                  {user.completedProjects || 0}
+                </div>
+                <div className="text-xs text-gray-500">Projects</div>
+              </div>
+              
+              {user.role === 'freelancer' && user.hourlyRate && (
+                <div className="text-center">
+                  <div className="text-sm font-semibold text-purple-600">
+                    {formatRate(user.hourlyRate)}
+                  </div>
+                  <div className="text-xs text-gray-500">per hour</div>
+                </div>
+              )}
+              
+              <div className="text-center">
+                <div className="text-xs text-gray-400">
+                  Joined {new Date(user.createdAt).getFullYear()}
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -82,25 +113,14 @@ const UserCard = ({ user, showActions = true }) => {
           </div>
         )}
 
-        {/* Location & Rate */}
-        <div className="flex items-center justify-between text-sm text-gray-600">
-          <div className="flex items-center space-x-4">
-            {user.location && (
-              <span className="flex items-center">
-                📍 {user.location}
-              </span>
-            )}
-            {user.hourlyRate && (
-              <span className="flex items-center">
-                💰 {formatRate(user.hourlyRate)}/hr
-              </span>
-            )}
+        {/* Location if available */}
+        {user.location && (
+          <div className="flex items-center text-sm text-gray-600 mb-4">
+            <span className="flex items-center">
+              � {user.location}
+            </span>
           </div>
-          
-          <span className="text-xs text-gray-400">
-            Joined {new Date(user.createdAt).getFullYear()}
-          </span>
-        </div>
+        )}
       </div>
 
       {/* Footer */}
