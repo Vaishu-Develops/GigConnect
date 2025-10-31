@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { gigService } from '../../services/gigService';
 import GigGrid from '../../components/gig/GigGrid';
+import Select from '../../components/ui/Select';
 import GigFilters from '../../components/gig/GigFilters';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
@@ -88,18 +89,21 @@ const BrowseJobs = () => {
                 </p>
               </div>
               
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-600">Sort by:</span>
-                <select
-                  value={filters.sortBy}
-                  onChange={(e) => setFilters(prev => ({ ...prev, sortBy: e.target.value }))}
-                  className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                >
-                  <option value="newest">Newest First</option>
-                  <option value="budget_high">Budget: High to Low</option>
-                  <option value="budget_low">Budget: Low to High</option>
-                  <option value="deadline">Nearby Deadline</option>
-                </select>
+              <div className="flex items-center space-x-3">
+                <span className="text-sm text-gray-600 font-medium">Sort by:</span>
+                <div className="w-48">
+                  <Select
+                    value={filters.sortBy}
+                    onChange={(value) => setFilters(prev => ({ ...prev, sortBy: value }))}
+                    options={[
+                      { value: 'newest', label: 'Newest First' },
+                      { value: 'budget_high', label: 'Budget: High to Low' },
+                      { value: 'budget_low', label: 'Budget: Low to High' },
+                      { value: 'deadline', label: 'Nearby Deadline' }
+                    ]}
+                    placeholder="Select sorting option"
+                  />
+                </div>
               </div>
             </div>
 

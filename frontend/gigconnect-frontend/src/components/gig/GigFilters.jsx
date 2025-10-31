@@ -1,5 +1,6 @@
 import React from 'react';
 import Input from '../ui/Input';
+import Select from '../ui/Select';
 
 const GigFilters = ({ filters, onFiltersChange }) => {
   const categories = [
@@ -80,32 +81,32 @@ const GigFilters = ({ filters, onFiltersChange }) => {
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Category
           </label>
-          <select
+          <Select
             value={filters.category}
-            onChange={(e) => handleChange('category', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-          >
-            <option value="">All Categories</option>
-            {categories.map(category => (
-              <option key={category} value={category}>{category}</option>
-            ))}
-          </select>
+            onChange={(value) => handleChange('category', value)}
+            options={[
+              { value: '', label: 'All Categories' },
+              ...categories.map(category => ({ value: category, label: category }))
+            ]}
+            placeholder="Select category"
+          />
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Sort By
           </label>
-          <select
+          <Select
             value={filters.sortBy}
-            onChange={(e) => handleChange('sortBy', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-          >
-            <option value="newest">Newest First</option>
-            <option value="budget_high">Budget: High to Low</option>
-            <option value="budget_low">Budget: Low to High</option>
-            <option value="deadline">Nearby Deadline</option>
-          </select>
+            onChange={(value) => handleChange('sortBy', value)}
+            options={[
+              { value: 'newest', label: 'Newest First' },
+              { value: 'budget_high', label: 'Budget: High to Low' },
+              { value: 'budget_low', label: 'Budget: Low to High' },
+              { value: 'deadline', label: 'Nearby Deadline' }
+            ]}
+            placeholder="Select sorting option"
+          />
         </div>
       </div>
     </div>

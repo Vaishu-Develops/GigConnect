@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { userService } from '../../services/userService';
 import UserCard from '../../components/user/UserCard';
+import Select from '../../components/ui/Select';
 import Input from '../../components/ui/Input';
 import { LoadingCard } from '../../components/ui/Loader';
 
@@ -118,16 +119,17 @@ const BrowseFreelancers = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Sort By
                   </label>
-                  <select
+                  <Select
                     value={filters.sortBy}
-                    onChange={(e) => setFilters(prev => ({ ...prev, sortBy: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                  >
-                    <option value="rating">Highest Rated</option>
-                    <option value="newest">Newest First</option>
-                    <option value="rate_high">Rate: High to Low</option>
-                    <option value="rate_low">Rate: Low to High</option>
-                  </select>
+                    onChange={(value) => setFilters(prev => ({ ...prev, sortBy: value }))}
+                    options={[
+                      { value: 'rating', label: 'Highest Rated' },
+                      { value: 'newest', label: 'Newest First' },
+                      { value: 'rate_high', label: 'Rate: High to Low' },
+                      { value: 'rate_low', label: 'Rate: Low to High' }
+                    ]}
+                    placeholder="Select sorting option"
+                  />
                 </div>
 
                 <button
