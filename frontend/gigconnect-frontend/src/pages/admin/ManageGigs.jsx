@@ -157,7 +157,7 @@ const ManageGigs = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <img
-                            src={gig.client?.avatar || '/default-avatar.png'}
+                            src={gig.client?.avatar || '/robot.png'}
                             alt={gig.client?.name}
                             className="w-8 h-8 rounded-full mr-2"
                           />

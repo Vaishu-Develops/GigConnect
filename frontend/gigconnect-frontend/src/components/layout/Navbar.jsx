@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useNotification } from '../../context/NotificationContext';
 import { useContractNotifications } from '../../hooks/useContractNotifications';
+import { getSafeAvatarUrl } from '../../utils/imageUtils';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -86,7 +87,7 @@ const Navbar = () => {
                 </Link>
                 <div className="relative group">
                   <img
-                    src={user.avatar || '/images/default-avatar.png'}
+                    src={getSafeAvatarUrl(user)}
                     alt="Profile"
                     className="w-8 h-8 rounded-full cursor-pointer"
                   />

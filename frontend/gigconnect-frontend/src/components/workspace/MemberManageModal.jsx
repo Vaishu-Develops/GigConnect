@@ -86,7 +86,7 @@ const MemberManageModal = ({ isOpen, onClose, member, workspace, onMemberUpdated
           {/* Member Info */}
           <div className="flex items-center space-x-3 mb-6 p-4 bg-gray-50 rounded-lg">
             <img
-              src={member.user.avatar || '/default-avatar.png'}
+              src={(member.user.avatar && member.user.avatar.trim()) || '/robot.png'}
               alt={member.user.name}
               className="w-12 h-12 rounded-full"
             />

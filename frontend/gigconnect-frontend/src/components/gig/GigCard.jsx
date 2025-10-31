@@ -2,6 +2,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { getSafeAvatarUrl } from '../../utils/imageUtils';
 
 const GigCard = ({ gig, showOwnerActions = false }) => {
   const { user } = useAuth();
@@ -77,9 +78,13 @@ const GigCard = ({ gig, showOwnerActions = false }) => {
         <div className="flex justify-between items-center mb-3">
           <div className="flex items-center">
             <img
-              src={gig.client?.avatar || '/default-avatar.png'}
+              src={getSafeAvatarUrl(gig.client)}
               alt={gig.client?.name}
               className="w-6 h-6 rounded-full mr-2"
+              onError={(e) => {
+                e.target.src = '/robot.png';
+                e.target.onerror = null;
+              }}
             />
             <span className="text-sm text-gray-600">{gig.client?.name}</span>
           </div>

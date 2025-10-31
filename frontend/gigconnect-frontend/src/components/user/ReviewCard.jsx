@@ -1,5 +1,6 @@
 import React from 'react';
 import Rating from '../ui/Rating';
+import { getSafeAvatarUrl } from '../../utils/imageUtils';
 
 const ReviewCard = ({ review }) => {
   return (
@@ -8,11 +9,11 @@ const ReviewCard = ({ review }) => {
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center space-x-3">
           <img
-            src={review.clientId?.avatar || '/images/default-avatar.png'}
+            src={getSafeAvatarUrl(review.clientId)}
             alt={review.clientId?.name || 'Unknown User'}
             className="w-10 h-10 rounded-full object-cover"
             onError={(e) => {
-              e.target.src = '/images/default-avatar.png';
+              e.target.src = '/robot.png';
               e.target.onerror = null;
             }}
           />

@@ -162,7 +162,7 @@ const PaymentCheckout = () => {
                     <h4 className="font-semibold text-gray-900">Freelancer</h4>
                     <div className="flex items-center space-x-3 mt-2">
                       <img
-                        src={data.freelancer?.avatar || '/default-avatar.png'}
+                        src={data.freelancer?.avatar || '/robot.png'}
                         alt={data.freelancer?.name}
                         className="w-10 h-10 rounded-full"
                       />

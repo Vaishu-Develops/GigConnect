@@ -148,7 +148,7 @@ const GigApplicants = () => {
                   <div className="flex-1">
                     <div className="flex items-start space-x-4">
                       <img
-                        src={application.freelancer.avatar || '/default-avatar.png'}
+                        src={application.freelancer.avatar || '/robot.png'}
                         alt={application.freelancer.name}
                         className="w-16 h-16 rounded-full"
                       />

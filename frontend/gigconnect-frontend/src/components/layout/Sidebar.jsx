@@ -54,7 +54,7 @@ const Sidebar = ({ isOpen, onClose }) => {
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center space-x-3">
             <img
-              src={user?.avatar || '/default-avatar.png'}
+              src={user?.avatar || '/robot.png'}
               alt={user?.name}
               className="w-10 h-10 rounded-full"
             />

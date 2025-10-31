@@ -2,14 +2,17 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { navigateToChat } from '../../utils/chatUtils';
+import { getSafeAvatarUrl } from '../../utils/imageUtils';
 import Rating from '../ui/Rating';
 import Badge from '../ui/Badge';
 import Button from '../ui/Button';
+import EditProfileModal from './EditProfileModal';
 
-const ProfileHeader = ({ user, isOwnProfile = false }) => {
+const ProfileHeader = ({ user, isOwnProfile = false, onProfileUpdated }) => {
   const { user: currentUser } = useAuth();
   const navigate = useNavigate();
   const [messageLoading, setMessageLoading] = useState(false);
+  const [showEditProfile, setShowEditProfile] = useState(false);
 
   const handleMessage = async () => {
     if (!currentUser) {
@@ -79,6 +82,7 @@ const ProfileHeader = ({ user, isOwnProfile = false }) => {
   ];
 
   return (
+    <>
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
       {/* Cover Photo */}
       <div className="h-32 bg-gradient-to-r from-emerald-500 to-purple-600"></div>
@@ -89,11 +93,11 @@ const ProfileHeader = ({ user, isOwnProfile = false }) => {
           <div className="flex flex-col md:flex-row md:items-end space-y-4 md:space-y-0 md:space-x-6">
             <div className="relative">
               <img
-                src={user?.avatar || user?.profilePicture || '/images/default-avatar.png'}
+                src={getSafeAvatarUrl(user)}
                 alt={user?.name || 'User profile'}
                 className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover bg-gray-100"
                 onError={(e) => {
-                  e.target.src = '/images/default-avatar.png';
+                  e.target.src = '/robot.png';
                   e.target.onerror = null;
                 }}
               />
@@ -128,7 +132,7 @@ const ProfileHeader = ({ user, isOwnProfile = false }) => {
 
           <div className="flex space-x-3 mt-4 md:mt-0">
             {isOwnProfile ? (
-              <Button as={Link} to="/settings">
+              <Button onClick={() => setShowEditProfile(true)}>
                 Edit Profile
               </Button>
             ) : (
@@ -204,6 +208,16 @@ const ProfileHeader = ({ user, isOwnProfile = false }) => {
         </div>
       </div>
     </div>
+
+    {/* Edit Profile Modal */}
+    {isOwnProfile && (
+      <EditProfileModal
+        isOpen={showEditProfile}
+        onClose={() => setShowEditProfile(false)}
+        onProfileUpdated={onProfileUpdated}
+      />
+    )}
+    </>
   );
 };
 

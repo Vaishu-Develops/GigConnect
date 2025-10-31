@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { workspaceService } from '../../services/workspaceService';
 import { useAuth } from '../../context/AuthContext';
+import { getSafeAvatarUrl } from '../../utils/imageUtils';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
 import { LoadingSpinner } from '../../components/ui/Loader';
@@ -220,9 +221,13 @@ const WorkspaceList = () => {
                     {workspace.members.slice(0, 3).map((member, index) => (
                       <img
                         key={member.user._id}
-                        src={member.user.avatar || '/default-avatar.png'}
+                        src={getSafeAvatarUrl(member.user)}
                         alt={member.user.name}
                         className="w-6 h-6 rounded-full border-2 border-white"
+                        onError={(e) => {
+                          e.target.src = '/robot.png';
+                          e.target.onerror = null;
+                        }}
                       />
                     ))}
                     {workspace.memberCount > 3 && (

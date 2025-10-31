@@ -212,7 +212,7 @@ const ActiveJobs = () => {
                     {/* Client Info */}
                     <div className="flex items-center space-x-2 mb-3">
                       <img
-                        src={gig.client?.avatar || '/default-avatar.png'}
+                        src={gig.client?.avatar || '/robot.png'}
                         alt={gig.client?.name}
                         className="w-6 h-6 rounded-full"
                       />

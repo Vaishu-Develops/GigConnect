@@ -162,7 +162,7 @@ const GigDetails = () => {
             <h3 className="text-xl font-semibold text-gray-900 mb-4">About the Client</h3>
             <div className="flex items-center space-x-4">
               <img
-                src={gig.client?.avatar || '/default-avatar.png'}
+                src={(gig.client?.avatar && gig.client.avatar.trim()) || '/robot.png'}
                 alt={gig.client?.name}
                 className="w-16 h-16 rounded-full"
               />

@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import Rating from '../ui/Rating';
 import Badge from '../ui/Badge';
+import { getSafeAvatarUrl } from '../../utils/imageUtils';
 
 const UserCard = ({ user, showActions = true }) => {
   const formatRate = (rate) => {
@@ -19,11 +20,11 @@ const UserCard = ({ user, showActions = true }) => {
         <div className="flex items-start space-x-4 mb-4">
           <div className="relative">
             <img
-              src={user?.avatar || user?.profilePicture || '/images/default-avatar.png'}
+              src={getSafeAvatarUrl(user)}
               alt={user?.name || 'User profile'}
               className="w-16 h-16 rounded-full border-2 border-emerald-200 group-hover:border-emerald-400 transition-colors object-cover bg-gray-100"
               onError={(e) => {
-                e.target.src = '/images/default-avatar.png';
+                e.target.src = '/robot.png';
                 e.target.onerror = null;
               }}
             />

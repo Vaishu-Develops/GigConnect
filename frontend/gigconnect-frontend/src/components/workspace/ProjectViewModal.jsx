@@ -175,7 +175,7 @@ const ProjectViewModal = ({ isOpen, onClose, project }) => {
                   <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <div className="flex items-center space-x-3">
                       <img
-                        src={member.user?.avatar || '/default-avatar.png'}
+                        src={member.user?.avatar || '/robot.png'}
                         alt={member.user?.name || 'Unknown'}
                         className="w-8 h-8 rounded-full"
                       />

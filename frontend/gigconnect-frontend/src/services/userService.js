@@ -21,6 +21,11 @@ export const userService = {
     return response.data;
   },
 
+  async updateProfile(profileData) {
+    const response = await api.put('/users/profile', profileData);
+    return response;
+  },
+
   async deleteUser(id) {
     const response = await api.delete(`/users/${id}`);
     return response.data;

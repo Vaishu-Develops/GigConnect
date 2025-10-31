@@ -78,6 +78,10 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  const updateUser = (updatedUserData) => {
+    setUser(updatedUserData);
+  };
+
   const updateProfile = async (profileData) => {
     try {
       const updatedUser = await authService.updateProfile(profileData);
@@ -98,6 +102,7 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
+    updateUser,
     updateProfile,
     isAuthenticated: !!user && !!token,
   };

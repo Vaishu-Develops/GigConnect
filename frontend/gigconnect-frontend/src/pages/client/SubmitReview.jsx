@@ -115,7 +115,7 @@ const SubmitReview = () => {
             <h3 className="font-semibold text-gray-900 mb-2">Project: {gig.title}</h3>
             <div className="flex items-center space-x-4">
               <img
-                src={gig.freelancer?.avatar || '/default-avatar.png'}
+                src={gig.freelancer?.avatar || '/robot.png'}
                 alt={gig.freelancer?.name}
                 className="w-12 h-12 rounded-full"
               />

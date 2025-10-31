@@ -309,7 +309,7 @@ const WorkspaceDashboard = () => {
                     >
                       <div className="flex items-center space-x-4">
                         <img
-                          src={member.user.avatar || '/default-avatar.png'}
+                          src={(member.user.avatar && member.user.avatar.trim()) || '/robot.png'}
                           alt={member.user.name}
                           className="w-12 h-12 rounded-full"
                         />

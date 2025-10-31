@@ -166,7 +166,7 @@ const ProjectDetails = () => {
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Freelancer</h3>
               <div className="flex items-center space-x-4">
                 <img
-                  src={gig.freelancer?.avatar || '/default-avatar.png'}
+                  src={gig.freelancer?.avatar || '/robot.png'}
                   alt={gig.freelancer?.name}
                   className="w-16 h-16 rounded-full"
                 />

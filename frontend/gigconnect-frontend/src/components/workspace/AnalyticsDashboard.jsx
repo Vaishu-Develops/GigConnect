@@ -285,7 +285,7 @@ const AnalyticsDashboard = ({ workspaceId }) => {
                         #{index + 1}
                       </div>
                       <img
-                        src={member.user.avatar || '/default-avatar.png'}
+                        src={(member.user.avatar && member.user.avatar.trim()) || '/robot.png'}
                         alt={member.user.name}
                         className="w-10 h-10 rounded-full"
                       />

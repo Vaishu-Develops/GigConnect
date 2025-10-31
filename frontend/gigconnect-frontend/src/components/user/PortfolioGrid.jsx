@@ -12,7 +12,8 @@ const PortfolioGrid = ({ items = [], isOwnProfile = false, onAddItem, onDeleteIt
     item.title
   );
 
-  console.log('Valid portfolio items:', validItems);
+  console.log('Valid portfolio items after filtering:', validItems);
+  console.log('Items that were filtered out:', items.filter(item => !item || typeof item !== 'object' || !item._id || !item.title));
 
   const [selectedItem, setSelectedItem] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -69,7 +70,7 @@ const PortfolioGrid = ({ items = [], isOwnProfile = false, onAddItem, onDeleteIt
                   alt={item?.title || 'Portfolio item'}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   onError={(e) => {
-                    e.target.src = '/images/default-project.jpg';
+                    e.target.src = '/robot.png';
                     e.target.onerror = null;
                   }}
                 />

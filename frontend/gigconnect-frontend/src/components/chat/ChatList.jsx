@@ -73,7 +73,7 @@ const ChatList = ({ chats = [], loading = false }) => {
             `}
           >
             <img
-              src={otherUser.avatar || '/default-avatar.png'}
+              src={otherUser.avatar || '/robot.png'}
               alt={otherUser.name}
               className="w-12 h-12 rounded-full"
             />

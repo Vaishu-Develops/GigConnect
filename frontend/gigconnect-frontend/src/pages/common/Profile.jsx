@@ -32,6 +32,8 @@ const Profile = () => {
       try {
         userData = await userService.getUserById(currentUser._id);
         console.log('User data received:', userData);
+        console.log('User avatar field:', userData?.avatar);
+        console.log('User profilePicture field:', userData?.profilePicture);
       } catch (userError) {
         console.error('Failed to fetch user data:', userError);
         userData = currentUser; // Fallback to current user data
@@ -76,6 +78,10 @@ const Profile = () => {
     setPortfolio(prev => [newPortfolioItem, ...prev]);
   };
 
+  const handleProfileUpdated = (updatedUser) => {
+    setUser(updatedUser);
+  };
+
   const handleDeletePortfolio = async (itemId) => {
     try {
       await portfolioService.deletePortfolioItem(itemId);
@@ -99,7 +105,11 @@ const Profile = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Profile Header */}
-        <ProfileHeader user={user} isOwnProfile={true} />
+        <ProfileHeader 
+          user={user} 
+          isOwnProfile={true} 
+          onProfileUpdated={handleProfileUpdated}
+        />
 
         {/* Tabs */}
         <div className="mt-8">

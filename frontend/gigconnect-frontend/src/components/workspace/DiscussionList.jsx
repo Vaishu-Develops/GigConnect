@@ -229,7 +229,7 @@ const DiscussionList = ({ workspaceId, onDiscussionSelect }) => {
                 <div className="flex flex-col items-end space-y-2">
                   <div className="flex items-center space-x-2">
                     <img
-                      src={discussion.createdBy.avatar || '/default-avatar.png'}
+                      src={discussion.createdBy.avatar || '/robot.png'}
                       alt={discussion.createdBy.name}
                       className="h-8 w-8 rounded-full"
                     />
