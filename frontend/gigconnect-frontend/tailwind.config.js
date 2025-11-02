@@ -1,11 +1,64 @@
+const {
+  default: flattenColorPalette,
+} = require("tailwindcss/lib/util/flattenColorPalette");
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  darkMode: "class",
   theme: {
     extend: {
+      animation: {
+        aurora: "aurora 60s linear infinite",
+        "aurora-move": "aurora-move 20s ease-in-out infinite",
+        "aurora-flow": "aurora-flow 30s linear infinite", 
+        "aurora-pulse": "aurora-pulse 25s ease-in-out infinite",
+      },
+      keyframes: {
+        aurora: {
+          from: {
+            backgroundPosition: "50% 50%, 50% 50%",
+          },
+          to: {
+            backgroundPosition: "350% 50%, 350% 50%",
+          },
+        },
+        "aurora-move": {
+          "0%, 100%": {
+            backgroundPosition: "0% 50%, 100% 50%",
+          },
+          "25%": {
+            backgroundPosition: "100% 0%, 0% 100%",
+          },
+          "50%": {
+            backgroundPosition: "50% 100%, 50% 0%",
+          },
+          "75%": {
+            backgroundPosition: "0% 50%, 100% 50%",
+          },
+        },
+        "aurora-flow": {
+          "0%": {
+            backgroundPosition: "-100% 0%",
+          },
+          "100%": {
+            backgroundPosition: "100% 0%",
+          },
+        },
+        "aurora-pulse": {
+          "0%, 100%": {
+            opacity: "0.2",
+            transform: "scale(1)",
+          },
+          "50%": {
+            opacity: "0.4",
+            transform: "scale(1.1)",
+          },
+        },
+      },
       colors: {
         primary: {
           50: '#ecfdf5',
@@ -71,5 +124,15 @@ export default {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    function({ addUtilities, theme }) {
+      const colors = flattenColorPalette(theme("colors"));
+      const utilities = Object.entries(colors).map(([key, value]) => ({
+        [`.text-${key}`]: { color: value },
+        [`.bg-${key}`]: { backgroundColor: value },
+        [`.border-${key}`]: { borderColor: value },
+      }));
+      addUtilities(utilities.reduce((acc, curr) => ({ ...acc, ...curr }), {}));
+    },
+  ],
 }
