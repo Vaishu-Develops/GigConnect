@@ -5,7 +5,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './context/AuthContext.jsx'
 
 // Layout Components
-import Navbar from './components/layout/Navbar'
+import Navbar from './components/layout/ResizableNavbar'
 import Footer from './components/layout/Footer'
 import ProtectedRoute from './components/layout/ProtectedRoute'
 import LoadingSpinner from './components/ui/Loader'
@@ -86,7 +86,7 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Navbar />
-      <main className="flex-1">
+      <main className="flex-1 pt-20">
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Home />} />
