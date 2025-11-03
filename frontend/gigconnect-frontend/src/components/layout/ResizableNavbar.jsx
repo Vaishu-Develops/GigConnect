@@ -176,6 +176,7 @@ const Navbar = () => {
     ];
 
     if (user.role === 'client') {
+      baseItems.splice(1, 0, { name: "Find Talent", link: "/browse-freelancers" }); // Add after Explore
       baseItems.push({ name: "Contracts", link: "/client/contracts" });
     } else if (user.role === 'freelancer') {
       baseItems.push({ name: "Proposals", link: "/freelancer/hire-proposals" });

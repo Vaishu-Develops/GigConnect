@@ -8,6 +8,7 @@ import { useAuth } from '../../context/AuthContext';
 const Earnings = () => {
   const { user } = useAuth();
   const [payments, setPayments] = useState([]);
+  const [withdrawals, setWithdrawals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [withdrawalAmount, setWithdrawalAmount] = useState('');
   const [bankDetails, setBankDetails] = useState({
@@ -40,6 +41,7 @@ const Earnings = () => {
       // Also fetch withdrawals to calculate correct available balance
       const withdrawalsData = await paymentService.getWithdrawals();
       console.log('Withdrawals received:', withdrawalsData.data);
+      setWithdrawals(withdrawalsData.data || []);
       
       calculateStats(paymentsData.payments || [], withdrawalsData.data || []);
     } catch (error) {
@@ -189,6 +191,17 @@ const Earnings = () => {
       'attempted': 'accent', 
       'failed': 'error',
       'refunded': 'gray'
+    };
+    return colors[status] || 'gray';
+  };
+
+  const getWithdrawalStatusColor = (status) => {
+    const colors = {
+      'pending': 'accent',
+      'processing': 'accent',
+      'completed': 'success',
+      'failed': 'error',
+      'cancelled': 'gray'
     };
     return colors[status] || 'gray';
   };
@@ -362,54 +375,114 @@ const Earnings = () => {
         {/* Payment History */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">Payment History</h3>
+            <h3 className="text-lg font-semibold text-gray-900">Payment & Withdrawal History</h3>
           </div>
 
-          {payments.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="text-6xl mb-4">💰</div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                No payments yet
-              </h3>
-              <p className="text-gray-600">
-                Your payment history will appear here once you complete projects.
-              </p>
-            </div>
-          ) : (
-            <div className="divide-y divide-gray-200">
-              {payments.map((payment) => (
-                <div key={payment._id} className="px-6 py-4 hover:bg-gray-50">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <h4 className="font-semibold text-gray-900">
-                          {payment.gigId?.title || 'Project Payment'}
-                        </h4>
-                        <Badge variant={getStatusColor(payment.status)}>
-                          {payment.status}
-                        </Badge>
+          {(() => {
+            // Combine payments and withdrawals into a single list
+            const allTransactions = [
+              ...payments.map(payment => ({
+                ...payment,
+                type: 'payment',
+                date: payment.createdAt,
+                title: payment.gigId?.title || 'Project Payment',
+                client: payment.clientId?.name,
+                amount: payment.amount,
+                status: payment.status,
+                orderId: payment.orderId,
+                id: payment._id
+              })),
+              ...withdrawals.map(withdrawal => ({
+                ...withdrawal,
+                type: 'withdrawal',
+                date: withdrawal.createdAt,
+                title: 'Withdrawal',
+                amount: withdrawal.amount,
+                status: withdrawal.status,
+                transactionId: withdrawal.transactionId,
+                id: withdrawal._id
+              }))
+            ];
+
+            // Sort by date (newest first)
+            allTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            if (allTransactions.length === 0) {
+              return (
+                <div className="text-center py-12">
+                  <div className="text-6xl mb-4">💰</div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    No transactions yet
+                  </h3>
+                  <p className="text-gray-600">
+                    Your payment and withdrawal history will appear here.
+                  </p>
+                </div>
+              );
+            }
+
+            return (
+              <div className="divide-y divide-gray-200">
+                {allTransactions.map((transaction) => (
+                  <div key={`${transaction.type}-${transaction.id}`} className="px-6 py-4 hover:bg-gray-50">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-3 mb-2">
+                          <div className="flex items-center space-x-2">
+                            {transaction.type === 'payment' ? (
+                              <span className="text-green-600">↓</span>
+                            ) : (
+                              <span className="text-blue-600">↑</span>
+                            )}
+                            <h4 className="font-semibold text-gray-900">
+                              {transaction.title}
+                            </h4>
+                          </div>
+                          <Badge variant={
+                            transaction.type === 'payment' 
+                              ? getStatusColor(transaction.status)
+                              : getWithdrawalStatusColor(transaction.status)
+                          }>
+                            {transaction.status}
+                          </Badge>
+                          <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-700 capitalize">
+                            {transaction.type}
+                          </span>
+                        </div>
+                        {transaction.type === 'payment' && transaction.client && (
+                          <p className="text-sm text-gray-600">
+                            Client: {transaction.client}
+                          </p>
+                        )}
+                        {transaction.type === 'withdrawal' && transaction.bankDetails && (
+                          <p className="text-sm text-gray-600">
+                            Bank: {transaction.bankDetails.bankName} (****{transaction.bankDetails.accountNumber?.slice(-4)})
+                          </p>
+                        )}
+                        <p className="text-sm text-gray-500">
+                          {new Date(transaction.date).toLocaleDateString()} at {new Date(transaction.date).toLocaleTimeString()}
+                        </p>
                       </div>
-                      <p className="text-sm text-gray-600">
-                        Client: {payment.clientId?.name}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        {new Date(payment.createdAt).toLocaleDateString()}
-                      </p>
-                    </div>
-                    
-                    <div className="text-right">
-                      <div className="text-lg font-bold text-emerald-600">
-                        {formatCurrency(payment.amount)}
+                      
+                      <div className="text-right">
+                        <div className={`text-lg font-bold ${
+                          transaction.type === 'payment' ? 'text-emerald-600' : 'text-blue-600'
+                        }`}>
+                          {transaction.type === 'payment' ? '+' : '-'}{formatCurrency(transaction.amount)}
+                        </div>
+                        <p className="text-sm text-gray-600">
+                          {transaction.type === 'payment' 
+                            ? `Order: #${transaction.orderId}` 
+                            : `ID: ${transaction.transactionId}`
+                          }
+                        </p>
                       </div>
-                      <p className="text-sm text-gray-600">
-                        Order: #{payment.orderId}
-                      </p>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            );
+          })()}
         </div>
       </div>
     </div>

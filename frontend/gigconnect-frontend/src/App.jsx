@@ -94,7 +94,6 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/explore" element={<ExploreGigs />} />
           <Route path="/gigs/:gigId" element={<JobDetails />} />
-          <Route path="/browse-freelancers" element={<BrowseFreelancers />} />
           <Route path="/how-it-works" element={<HowItWorks />} />
           <Route path="/faq" element={<FAQ />} />
           <Route path="/contact" element={<Contact />} />
@@ -233,6 +232,14 @@ function App() {
           />
 
           {/* Client-Specific Routes */}
+          <Route
+            path="/browse-freelancers"
+            element={
+              <ProtectedRoute requiredRole="client">
+                <BrowseFreelancers />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/client/post-gig"
             element={

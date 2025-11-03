@@ -48,7 +48,7 @@ export const NavBody = ({ children, className, visible }) => {
         boxShadow: visible
           ? "0 0 24px rgba(16, 185, 129, 0.15), 0 1px 1px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(16, 185, 129, 0.1), 0 0 4px rgba(16, 185, 129, 0.08), 0 16px 68px rgba(5, 150, 105, 0.05), 0 1px 0 rgba(255, 255, 255, 0.1) inset"
           : "none",
-        width: visible ? "60%" : "100%",
+        width: visible ? "70%" : "100%",
         y: visible ? 20 : 0,
       }}
       transition={{
@@ -65,19 +65,24 @@ export const NavBody = ({ children, className, visible }) => {
         className
       )}
     >
-      {children}
+      {React.Children.map(children, (child) =>
+        React.isValidElement(child) && child.props && child.props.items
+          ? React.cloneElement(child, { visible })
+          : child
+      )}
     </motion.div>
   );
 };
 
-export const NavItems = ({ items, className, onItemClick }) => {
+export const NavItems = ({ items, className, onItemClick, visible }) => {
   const [hovered, setHovered] = useState(null);
 
   return (
     <motion.div
       onMouseLeave={() => setHovered(null)}
       className={cn(
-        "hidden flex-1 flex-row items-center justify-center space-x-1 lg:space-x-2 text-sm font-medium text-slate-700 transition duration-200 hover:text-emerald-700 lg:flex",
+        "hidden flex-1 flex-row items-center justify-center space-x-1 lg:space-x-2 font-medium text-slate-700 transition duration-200 hover:text-emerald-700 lg:flex whitespace-nowrap",
+        visible ? "text-xs" : "text-sm",
         className
       )}
     >
@@ -85,7 +90,10 @@ export const NavItems = ({ items, className, onItemClick }) => {
         <a
           onMouseEnter={() => setHovered(idx)}
           onClick={onItemClick}
-          className="relative px-2 lg:px-4 py-2 text-slate-700 hover:text-emerald-700 transition-colors duration-200"
+          className={cn(
+            "relative py-2 text-slate-700 hover:text-emerald-700 transition-colors duration-200 whitespace-nowrap",
+            visible ? "px-1" : "px-1 lg:px-3"
+          )}
           key={`link-${idx}`}
           href={item.link}
         >
