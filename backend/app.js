@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import connectDB from './config/db.js';
 import userRoutes from './routes/userRoutes.js';
 import gigRoutes from './routes/gigRoutes.js';
 import messageRoutes from './routes/messageRoutes.js';
@@ -18,6 +19,9 @@ import analyticsRoutes from './routes/analyticsRoutes.js';
 
 const app = express();
 
+// Connect to database (for serverless, this will be called on each request)
+connectDB();
+
 
 app.use('/api/webhooks', webhookRoutes);
 
@@ -25,8 +29,10 @@ app.use('/api/webhooks', webhookRoutes);
 app.use(cors({
   origin: [
     process.env.CLIENT_URL || "http://localhost:5173",
+    process.env.CORS_ORIGIN || "http://localhost:5174",
     "http://localhost:5174",
-    "http://localhost:3000"
+    "http://localhost:3000",
+    "https://*.vercel.app"
   ],
   credentials: true
 }));
