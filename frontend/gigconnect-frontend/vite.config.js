@@ -6,9 +6,6 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     extensions: ['.js', '.jsx', '.ts', '.tsx'],
-    alias: {
-      'socket.io-client': 'socket.io-client/dist/socket.io.js'
-    }
   },
   server: {
     port: 5174,
@@ -34,6 +31,16 @@ export default defineConfig({
           router: ['react-router-dom'],
           ui: ['framer-motion', '@heroicons/react', '@tabler/icons-react']
         }
+      }
+    },
+    commonjsOptions: {
+      transformMixedEsModules: true
+    }
+  },
+  optimizeDeps: {
+    esbuildOptions: {
+      define: {
+        global: 'globalThis'
       }
     }
   }

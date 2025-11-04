@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from './AuthContext';
-import io from 'socket.io-client';
 
 export const useSocket = () => {
   const { user, token } = useAuth();
@@ -9,36 +8,50 @@ export const useSocket = () => {
   const socketRef = useRef(null);
 
   useEffect(() => {
+    // Skip socket in production
+    if (import.meta.env.PROD) {
+      console.log('Socket.io disabled in production');
+      return;
+    }
+
     if (user && token && !socketRef.current) {
-      // Initialize socket connection
-      const newSocket = io(process.env.VITE_SOCKET_URL || 'http://localhost:5000', {
-        auth: {
-          token: token
-        },
-        transports: ['websocket'],
-        forceNew: true
-      });
+      // Lazy load socket.io-client
+      import('socket.io-client').then((socketModule) => {
+        const io = socketModule.default || socketModule.io;
+        
+        const newSocket = io(import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000', {
+          auth: {
+            token: token
+          },
+          transports: ['websocket'],
+          forceNew: true
+        });
 
-      socketRef.current = newSocket;
-      setSocket(newSocket);
+        socketRef.current = newSocket;
+        setSocket(newSocket);
 
-      newSocket.on('connect', () => {
-        console.log('Connected to server');
-        setIsConnected(true);
-      });
+        newSocket.on('connect', () => {
+          console.log('Connected to server');
+          setIsConnected(true);
+        });
 
-      newSocket.on('disconnect', () => {
-        console.log('Disconnected from server');
-        setIsConnected(false);
-      });
+        newSocket.on('disconnect', () => {
+          console.log('Disconnected from server');
+          setIsConnected(false);
+        });
 
-      newSocket.on('error', (error) => {
-        console.error('Socket error:', error);
+        newSocket.on('error', (error) => {
+          console.error('Socket error:', error);
+        });
+      }).catch((error) => {
+        console.error('Failed to load socket.io-client:', error);
       });
 
       return () => {
-        newSocket.disconnect();
-        socketRef.current = null;
+        if (socketRef.current) {
+          socketRef.current.disconnect();
+          socketRef.current = null;
+        }
       };
     }
   }, [user, token]);

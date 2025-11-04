@@ -1,4 +1,5 @@
-import { io } from 'socket.io-client';
+// Lazy load socket.io-client only when needed
+let io = null;
 
 class SocketService {
   constructor() {
@@ -6,12 +7,29 @@ class SocketService {
     this.listeners = new Map();
   }
 
-  connect(token) {
+  async connect(token) {
+    // Skip socket connection in production (Vercel serverless doesn't support WebSockets well)
+    if (import.meta.env.PROD) {
+      console.log('Socket.io disabled in production deployment');
+      return;
+    }
+
+    // Lazy load socket.io-client
+    if (!io) {
+      try {
+        const socketModule = await import('socket.io-client');
+        io = socketModule.io || socketModule.default;
+      } catch (error) {
+        console.warn('Socket.io-client not available:', error);
+        return;
+      }
+    }
+
     if (this.socket) {
       this.disconnect();
     }
 
-    this.socket = io(process.env.VITE_SOCKET_URL || 'http://localhost:5000', {
+    this.socket = io(import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000', {
       auth: {
         token
       },
