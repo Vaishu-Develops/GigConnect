@@ -421,10 +421,6 @@ const createChat = async (req, res) => {
     });
   }
 };
-      message: error.message 
-    });
-  }
-};
 
 const getUserChats = async (req, res) => {
   try {
