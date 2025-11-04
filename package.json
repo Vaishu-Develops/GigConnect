@@ -6,9 +6,5 @@
     "build": "cd frontend/gigconnect-frontend && npm ci && npm run build",
     "dev:frontend": "cd frontend/gigconnect-frontend && npm run dev",
     "dev:backend": "cd backend && npm run dev"
-  },
-  "workspaces": [
-    "frontend/gigconnect-frontend",
-    "backend"
-  ]
+  }
 }
