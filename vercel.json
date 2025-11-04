@@ -1,20 +1,24 @@
 {
-  "buildCommand": "cd frontend/gigconnect-frontend && npm ci && npm run build",
-  "outputDirectory": "frontend/gigconnect-frontend/dist",
-  "installCommand": "npm install --prefix frontend/gigconnect-frontend",
-  "functions": {
-    "backend/api/index.js": {
-      "runtime": "nodejs18.x"
+  "version": 2,
+  "builds": [
+    {
+      "src": "frontend/gigconnect-frontend/package.json",
+      "use": "@vercel/static-build",
+      "config": { "distDir": "dist" }
+    },
+    {
+      "src": "backend/api/**/*.js",
+      "use": "@vercel/node"
     }
-  },
+  ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/backend/api/index.js"
+      "dest": "/backend/api/$1"
     },
     {
       "src": "/(.*)",
-      "dest": "/frontend/gigconnect-frontend/dist/index.html"
+      "dest": "/frontend/gigconnect-frontend/dist/$1"
     }
   ]
 }

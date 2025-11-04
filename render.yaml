@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: gigconnect
+    env: node
+    plan: free
+    buildCommand: cd frontend/gigconnect-frontend && npm install && npm run build && cd ../../backend && npm install
+    startCommand: cd backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        fromDatabase:
+          name: gigconnect-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+      - key: CLIENT_URL
+        value: https://gigconnect.onrender.com
+      - key: CORS_ORIGIN
+        value: https://gigconnect.onrender.com
+
+databases:
+  - name: gigconnect-db
+    databaseName: gigconnect
+    user: gigconnect_user

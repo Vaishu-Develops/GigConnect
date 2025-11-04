@@ -8,12 +8,6 @@ class SocketService {
   }
 
   async connect(token) {
-    // Skip socket connection in production (Vercel serverless doesn't support WebSockets well)
-    if (import.meta.env.PROD) {
-      console.log('Socket.io disabled in production deployment');
-      return;
-    }
-
     // Lazy load socket.io-client
     if (!io) {
       try {
@@ -29,7 +23,7 @@ class SocketService {
       this.disconnect();
     }
 
-    this.socket = io(import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000', {
+    this.socket = io(import.meta.env.VITE_SOCKET_URL || window.location.origin, {
       auth: {
         token
       },

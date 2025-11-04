@@ -1,5 +1,7 @@
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import connectDB from './config/db.js';
 import userRoutes from './routes/userRoutes.js';
 import gigRoutes from './routes/gigRoutes.js';
@@ -16,6 +18,9 @@ import workspaceRoutes from './routes/workspaceRoutes.js';
 import projectRoutes from './routes/projectRoutes.js';
 import discussionRoutes from './routes/discussionRoutes.js';
 import analyticsRoutes from './routes/analyticsRoutes.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 
@@ -53,14 +58,30 @@ app.use('/api/workspaces', workspaceRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/discussions', discussionRoutes);
 app.use('/api/analytics', analyticsRoutes);
-// Home route
-app.get('/', (req, res) => {
-  res.json({ message: 'GigConnect API is running!' });
-});
 
-// Handle 404
-app.use('*', (req, res) => {
-  res.status(404).json({ message: 'Route not found' });
+// Serve frontend static files in production
+if (process.env.NODE_ENV === 'production') {
+  const frontendPath = path.join(__dirname, '../frontend/gigconnect-frontend/dist');
+  app.use(express.static(frontendPath));
+  
+  // Handle React routing - send all non-API requests to index.html
+  app.get('*', (req, res) => {
+    if (!req.path.startsWith('/api')) {
+      res.sendFile(path.join(frontendPath, 'index.html'));
+    } else {
+      res.status(404).json({ message: 'API route not found' });
+    }
+  });
+} else {
+  // Development route
+  app.get('/', (req, res) => {
+    res.json({ message: 'GigConnect API is running!' });
+  });
+}
+
+// Handle 404 for API routes only
+app.use('/api/*', (req, res) => {
+  res.status(404).json({ message: 'API route not found' });
 });
 
 export default app;

@@ -8,18 +8,12 @@ export const useSocket = () => {
   const socketRef = useRef(null);
 
   useEffect(() => {
-    // Skip socket in production
-    if (import.meta.env.PROD) {
-      console.log('Socket.io disabled in production');
-      return;
-    }
-
     if (user && token && !socketRef.current) {
       // Lazy load socket.io-client
       import('socket.io-client').then((socketModule) => {
         const io = socketModule.default || socketModule.io;
         
-        const newSocket = io(import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000', {
+        const newSocket = io(import.meta.env.VITE_SOCKET_URL || window.location.origin, {
           auth: {
             token: token
           },
