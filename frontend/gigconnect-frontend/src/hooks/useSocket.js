@@ -14,7 +14,9 @@ export const useSocket = () => {
       const newSocket = io(process.env.VITE_SOCKET_URL || 'http://localhost:5000', {
         auth: {
           token: token
-        }
+        },
+        transports: ['websocket'],
+        forceNew: true
       });
 
       socketRef.current = newSocket;

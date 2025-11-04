@@ -6,6 +6,9 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     extensions: ['.js', '.jsx', '.ts', '.tsx'],
+    alias: {
+      'socket.io-client': 'socket.io-client/dist/socket.io.js'
+    }
   },
   server: {
     port: 5174,
@@ -14,6 +17,11 @@ export default defineConfig({
         target: 'http://localhost:5000',
         changeOrigin: true,
       },
+      '/socket.io': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+        ws: true
+      }
     },
   },
   build: {
